@@ -1,4 +1,4 @@
-FILE=styh.profle
+FILE=styh.profile
 if test -f "$FILE"; then
 	cat > styh.profile <<- EOF
 	echo
