@@ -24,9 +24,10 @@ CONTAINS_STRING="# STYH startup profile"
 if ! grep -q CONTAINS_STRING "$FILE"; then
   cp .profile .saved.profile
 	cat >> .profile <<- EOF
-	echo #
-	echo # STYH startup profile
-	echo sh styh.profile
+	#
+	#
+	# STYH startup profile
+	sh styh.profile
 	EOF
 fi
 
@@ -67,3 +68,5 @@ cat > .bash_aliases <<- EOF
 	alias savupwaiting='cd /var/www/savup_waiting_list.com'
 	EOF
 fi
+
+. ~/.profile
