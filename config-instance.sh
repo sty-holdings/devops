@@ -19,7 +19,7 @@ if test -f "$FILE"; then
 EOF
 fi
 
-FILE=.profle
+FILE=.profile
 CONTAINS_STRING="# STYH startup profile"
 if ! grep -q CONTAINS_STRING "$FILE"; then
 	cat > .profile <<- EOF
