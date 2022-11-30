@@ -22,7 +22,8 @@ fi
 FILE=.profile
 CONTAINS_STRING="# STYH startup profile"
 if ! grep -q CONTAINS_STRING "$FILE"; then
-	cat > .profile <<- EOF
+  cp .profile .saved.profile
+	cat >> .profile <<- EOF
 	echo #
 	echo # STYH startup profile
 	echo sh styh.profile
