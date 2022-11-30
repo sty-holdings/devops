@@ -1,5 +1,28 @@
+sudo apt-get install mlocate -y
+
+
+FILE=.profile
+CONTAINS_STRING="# STYH startup profile"
+if ! grep -q CONTAINS_STRING "$FILE"; then
+  cp .profile .saved.profile
+	cat >> .profile <<- EOF
+	
+	#
+	# STYH startup profile
+	sh styh.profile
+	EOF
+fi
+
 FILE=styh.profile
-if test -f "$FILE"; then
+if ! test -f "$FILE"; then
+  # if running bash
+	if [ -n "$BASH_VERSION" ]; then
+    # include .bashrc if it exists
+    if [ -f "$HOME/.bash_aliases" ]; then
+        . "$HOME/.bash_aliases"
+    fi
+	fi
+
 	cat > styh.profile <<- EOF
 	echo
 	echo "========================="
@@ -17,18 +40,6 @@ if test -f "$FILE"; then
 	echo " > sudo apt list --upgradable "
 	echo "========================="
 EOF
-fi
-
-FILE=.profile
-CONTAINS_STRING="# STYH startup profile"
-if ! grep -q CONTAINS_STRING "$FILE"; then
-  cp .profile .saved.profile
-	cat >> .profile <<- EOF
-	#
-	#
-	# STYH startup profile
-	sh styh.profile
-	EOF
 fi
 
 FILE=.bash_aliases
