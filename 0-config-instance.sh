@@ -1,8 +1,14 @@
+#!/bin/bash
+#
+# This will install NATS, NATS CLI, and NSC. Additionally, it will create the operator account
+#
+
 sudo apt update
 sudo apt-get install mlocate -y
 sudo apt-get install unzip
 sudo apt-get install zip
 
+cd $HOME
 
 FILE=.profile
 ORIGINALFILE=.original.profile
@@ -73,4 +79,8 @@ cat > "$HOME/$FILE" <<- EOF
 	alias savupwaiting='cd /var/www/savup_waiting_list.com'
 EOF
 
-. ~/.bashrc
+echo
+echo
+echo "==> You must run: . ~/.bashrc"
+echo
+echo
