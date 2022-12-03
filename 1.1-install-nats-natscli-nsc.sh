@@ -10,6 +10,7 @@ NSC_BIN=/usr/bin/nsc
 #
 NATS_OPERATOR=styh
 NATS_ACCOUNT=SAVUP
+NATS_USER=savup
 #
 SHOW_MOUNT_NOTES=0
 
@@ -94,6 +95,9 @@ CMD="nsc add account $NATS_ACCOUNT"
 ${CMD}
 echo "==> Generate $NATS_ACCOUNT account signature key"
 CMD="nsc edit account $NATS_ACCOUNT --sk generate"
+${CMD}
+echo "==> Create $NATS_USER user"
+CMD="nsc add user $NATS_USER"
 ${CMD}
 
 echo "--------------"
