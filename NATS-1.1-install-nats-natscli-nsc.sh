@@ -1,22 +1,8 @@
 #!/bin/bash
 #
-# This will install NATS, NATS CLI, and NSC. Additionally, it will create the operator and account
+# This will install NATS, NATS CLI, and NSC
 #
-NATS_HOME=/mnt/disks/nats_home
-#
-NATS_BIN=/usr/bin/nats-server
-NATS_CLI_BIN=/usr/bin/nats
-NSC_BIN=/usr/bin/nsc
-#
-NATS_OPERATOR=styh
-NATS_ACCOUNT=SAVUP
-NATS_USER=savup
-#
-SHOW_MOUNT_NOTES=0
 
-
-echo
-echo "--------------"
 if grep -q $NATS_HOME "/etc/fstab"; then
 	echo "==> NATS home is already mounted"
 else
@@ -82,45 +68,3 @@ else
 	unzip nsc.7.4.zip -d nsc
 	sudo cp "$NATS_HOME/nsc/nsc" $NSC_BIN
 fi
-
-echo "--------------"
-echo "==> Creating NSC operator"
-CMD="nsc add operator --generate-signing-key --sys --name $NATS_OPERATOR"
-${CMD}
-echo "==> NSC operator will require keys and push them to $NATS_URL"
-CMD="nsc edit operator --require-signing-keys --account-jwt-server-url $NATS_URL"
-${CMD}
-echo "==> Create $NATS_ACCOUNT account"
-CMD="nsc add account $NATS_ACCOUNT"
-${CMD}
-echo "==> Generate $NATS_ACCOUNT account signature key"
-CMD="nsc edit account $NATS_ACCOUNT --sk generate"
-${CMD}
-echo "==> Create $NATS_USER user"
-CMD="nsc add user $NATS_USER"
-${CMD}
-
-echo "--------------"
-echo
-if [ "$SHOW_MOUNT_NOTES" == "1" ]; then
-	sudo cp /etc/fstab /etc/original.fstab
-	echo "==> You need to update fstab"
-	echo
-	echo "run: sudo blkid /dev/sdb"
-	echo 
-	echo "copy the UUID name/value pair" 
-	echo
-	echo "run: sudo vim /etc/fstab"
-	echo "add the following to the bottom of the file:"
-	echo "{UUID name/value pair} $NATS_HOME ext4 discard,defaults 0 2"
-	echo
-	echo "run: cat /etc/fstab"
-	echo "verify that {UUID name/value pair} $NATS_HOME ext4 discard,defaults 0 2 is at the bottom of the file."
-	echo
-	echo "==> You must run: sudo shutdown -r now"
-	echo " This will load the changes made."
-	echo
-fi
-echo
-echo Done
-

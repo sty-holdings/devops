@@ -133,8 +133,9 @@ EOF
 echo
 echo "==> Creating the $BASH_EXPORTS"
 cat > "$HOME/$BASH_EXPORTS" <<- EOF
-	export NATS_URL=nats://0.0.0.0:4222
-	export NATS_HOME=/mnt/disks/nats_home
+
+	# To add exports, make sure to update the 0-config-instance.sh file in the devops GITHUB repository
+
 EOF
 
 echo
@@ -171,4 +172,7 @@ echo
 echo
 echo "==> You must run: sudo shutdown -r now"
 echo " This will load the changes made to the system."
+echo
+echo 
+echo "==> Done"
 echo
