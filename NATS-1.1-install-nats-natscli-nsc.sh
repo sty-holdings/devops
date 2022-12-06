@@ -18,7 +18,6 @@ cd $NATS_HOME
 echo "--------------"
 echo "==> Setting up NATS home directory"
 mkdir -p $NATS_HOME/includes
-mkdir -p $NATS_HOME/jwt
  
 cd $HOME
 echo

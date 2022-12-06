@@ -46,6 +46,7 @@ if [ "$continue" == "n" ]; then
 	rm -rf $HOME/.config/nats
 	rm -rf $HOME/.local/nats
 	rm -rf $HOME/nats
+	rm -rf $HOME/jwt
 	echo " Do you want restart to clear NATS from the system? (y/N)"
 		read restart
 	if [ "$restart" == "y" ]; then
