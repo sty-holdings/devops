@@ -4,4 +4,5 @@
 
 echo "==> Push NSC accounts and user to NATS"
 CMD='nsc push -A'
-${CMD}
+echo $CMD >>NATS_log_file 2>>NATS_log_file
+${CMD} >>NATS_log_file 2>>NATS_log_file

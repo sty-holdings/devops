@@ -5,7 +5,10 @@
 
 echo "==> Creating NSC operator"
 CMD="nsc add operator --generate-signing-key --sys --name $NATS_OPERATOR"
-${CMD}
+echo $CMD >>NATS_log_file 2>>NATS_log_file
+${CMD} >>NATS_log_file 2>>NATS_log_file
+
 echo "==> NSC operator will require keys and push them to $NATS_URL"
 CMD="nsc edit operator --require-signing-keys --account-jwt-server-url $NATS_URL"
-${CMD}
+echo $CMD >>NATS_log_file 2>>NATS_log_file
+${CMD} >>NATS_log_file 2>>NATS_log_file
