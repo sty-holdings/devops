@@ -4,11 +4,11 @@
 #
 
 echo "==> Creating nats-server configuration file"
-cat > "$NATS_HOME/nats.conf" <<- EOF
+cat > "$MY_NATS_HOME/nats.conf" <<- EOF
 
 	listen: localhost:4222
 
-	include 'includes/$NATS_RESOLVER' # Pull in from file
+	include 'includes/$MY_NATS_RESOLVER' # Pull in from file
 
 	#tls: {
 	#	cert_file: "????"
@@ -29,3 +29,8 @@ cat > "$NATS_HOME/nats.conf" <<- EOF
 
 
 EOF
+
+msg="Created $MY_NATS_HOME/nats.conf file"
+echo $msg
+echo $msg >>NATS_log_file 2>>NATS_log_file
+echo >>NATS_log_file 2>>NATS_log_file
