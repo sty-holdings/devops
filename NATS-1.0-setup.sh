@@ -173,7 +173,7 @@ read continue
 if [ "$continue" == "n" ]; then
 	nohup sh $HOME/NATS-1.5-start-server.sh &
 	sleep 2
-	rm nohup
+	rm nohup.out
 	sudo ps aux | grep nats-server | awk '/nats.conf/' > /tmp/natsAUX.tmp
 	NATS_PID=$(sudo cat /tmp/natsAUX.tmp | awk '//{print $2}')
 	if [[ -z "$NATS_PID" ]]; then
@@ -215,7 +215,18 @@ echo " Do you want to SKIP this step? (Y/n)"
 echo "                ----"
 read continue
 if [ "$continue" == "n" ]; then
-	sh $HOME/NATS-1.8-create-contexts.sh
+	sh $HOME/NATS-1.7.1-create-contexts.sh
+fi
+
+echo
+echo "==========="
+echo "NEXT: Creating NATS contexts"
+echo
+echo " Do you want to SKIP this step? (Y/n)"
+echo "                ----"
+read continue
+if [ "$continue" == "n" ]; then
+	sh $HOME/NATS-1.8-create-systemd-service.sh
 fi
 
 echo
