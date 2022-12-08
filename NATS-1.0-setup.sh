@@ -80,6 +80,7 @@ if [ "$continue" == "n" ]; then
 	rm -rf $HOME/NATS
 	rm -rf $HOME/jwt
 	rm $HOME/NATS_log_file
+	rm $MY_NATS_HOME/NATS_log_file
 	echo
 	echo " Do you want RESTART the system? (y/N)"
 	echo "             -------"
@@ -216,17 +217,6 @@ echo "                ----"
 read continue
 if [ "$continue" == "n" ]; then
 	sh $HOME/NATS-1.7.1-create-contexts.sh
-fi
-
-echo
-echo "==========="
-echo "NEXT: Creating NATS contexts"
-echo
-echo " Do you want to SKIP this step? (Y/n)"
-echo "                ----"
-read continue
-if [ "$continue" == "n" ]; then
-	sh $HOME/NATS-1.8-create-systemd-service.sh
 fi
 
 echo
