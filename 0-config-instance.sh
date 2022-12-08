@@ -33,6 +33,8 @@ if ! [ -f $HOME/$UPGRADE_DONE ]; then
 	sudo apt-get upgrade python3-apport -y
 	sudo apt-get upgrade snapd -y
 	sudo apt-get upgrade ubuntu-advantage-tools -y
+	sudo apt-get upgrade cloud-init -y
+	sudo apt-get upgrade python3-distupgrade -y
 	touch $HOME/$UPGRADE_DONE
 fi
 
