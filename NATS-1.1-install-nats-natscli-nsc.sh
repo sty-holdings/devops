@@ -16,9 +16,18 @@ fi
 
 cd $MY_NATS_HOME
 echo "--------------"
-echo "==> Setting up NATS home directory"
+echo "==> Setting up NATS home directory and permissions"
 mkdir -p $MY_NATS_HOME/includes
+sudo chgrp -R nats "$MY_NATS_HOME"
+sudo chmod g+s "$MY_NATS_HOME"
  
+
+echo "--------------"
+echo "==> Setting NATS user and group"
+sudo chgrp -R nats "$MY_NATS_HOME"
+sudo chmod g+s "$MY_NATS_HOME"
+sudo useradd --home /mnt/disks/nats_home/ -M -s /bin/false -g nats -G google-sudoers nats
+
 cd $HOME
 echo
 echo
