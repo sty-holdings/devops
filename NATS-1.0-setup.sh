@@ -61,7 +61,8 @@ export MY_NATS_OPERATOR=styh
 export MY_NATS_ACCOUNT=SAVUP
 export MY_NATS_USER=savup
 #
-export MY_NATS_URL=nats://0.0.0.0:4222
+export MY_NATS_URL="nats://0.0.0.0:4222"
+export MY_NATS_SERVER_NAME="nats-dev-1"
 #
 
 echo
