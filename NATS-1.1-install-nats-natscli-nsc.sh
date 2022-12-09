@@ -17,6 +17,7 @@ fi
 echo "--------------"
 echo "==> Setting up NATS user, group, home directory, and permissions"
 mkdir -p $MY_NATS_HOME/includes
+mkdir -p $MY_NATS_HOME/jwt
 sudo useradd --home /mnt/disks/nats_home/ -M -s /bin/false -g nats -G google-sudoers nats
 sudo groupadd nats
 sudo chgrp -R nats "$MY_NATS_HOME"
