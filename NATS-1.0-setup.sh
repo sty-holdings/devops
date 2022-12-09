@@ -7,18 +7,20 @@
 # TODO: Pass variable to sub scripts to make them reusable
 # TODO: Add option to execute all steps except the reboot
 
-echo
-echo "================================"
-echo "  N    N    AA    TTTTTT   SSSS"
-echo "  NN   N   A  A     TT    S    "
-echo "  N N  N   AAAA     TT     SSS "
-echo "  N  N N   A  A     TT        S"
-echo "  N   NN  A    A    TT    SSSS "
-echo "==============================="
-echo
-sudo ps aux | grep nats-server | awk '/nats.conf/' > /tmp/natsAUX.tmp
-NATS_PID=$(sudo cat /tmp/natsAUX.tmp | awk '//{print $2}')
-if ! [[ -z "$NATS_PID" ]]; then
+
+displayNATS() {
+	echo
+	echo "================================"
+	echo "  N    N    AA    TTTTTT   SSSS"
+	echo "  NN   N   A  A     TT    S    "
+	echo "  N N  N   AAAA     TT     SSS "
+	echo "  N  N N   A  A     TT        S"
+	echo "  N   NN  A    A    TT    SSSS "
+	echo "==============================="
+	echo
+}
+
+dislpayAlert() {
 	echo
 	echo "**********************************"
 	echo 
@@ -30,6 +32,23 @@ if ! [[ -z "$NATS_PID" ]]; then
 	echo 
 	echo "**********************************"
 	echo
+}
+
+displayStepSpacer() {
+	echo
+	echo
+	echo
+	echo
+	echo "--------------------------"
+}
+
+
+displayNATS()
+
+sudo ps aux | grep nats-server | awk '/nats.conf/' > /tmp/natsAUX.tmp
+NATS_PID=$(sudo cat /tmp/natsAUX.tmp | awk '//{print $2}')
+if ! [[ -z "$NATS_PID" ]]; then
+	displayAlert()
 	echo " A NATS Server is already running on this system."
 	echo
 	echo " Please investigate the configuration of this system."
@@ -43,7 +62,7 @@ if ! [[ -z "$NATS_PID" ]]; then
 	exit
 fi 
 
-echo "--------------------------"
+displayStepSpacer()
 echo " Setting script variables "
 #
 # If you make changes here, you may need to make the same change in init.d/nats
@@ -65,11 +84,7 @@ export MY_NATS_URL="nats://0.0.0.0:4222"
 export MY_NATS_SERVER_NAME="nats-dev-1"
 #
 
-echo
-echo
-echo
-echo
-echo "--------------------------"
+displayStepSpacer()
 echo " WARNING"
 echo " WARNING: You are about to remove the existing NATS server and all files!! "
 echo " WARNING"
@@ -112,12 +127,8 @@ else
 fi
 
 
-echo
-echo
-echo
-echo
-echo
-echo "--------------------------"
+
+displayStepSpacer()
 echo "NEXT: Install NATS server, NATS CLI, and NSC"
 echo
 echo " Do you want to SKIP this step? (Y/n)"
@@ -127,12 +138,7 @@ if [ "$continue" == "n" ]; then
 	sh $HOME/NATS-1.1-install-nats-natscli-nsc.sh
 fi
 
-echo
-echo
-echo
-echo
-echo
-echo "--------------------------"
+displayStepSpacer()
 echo "NEXT: Creating NATS operator and SYS"
 echo
 echo " Do you want to SKIP this step? (Y/n)"
@@ -142,12 +148,7 @@ if [ "$continue" == "n" ]; then
 	sh $HOME/NATS-1.2-create-operator-sys.sh
 fi
 
-echo
-echo
-echo
-echo
-echo
-echo "--------------------------"
+displayStepSpacer()
 echo "NEXT: Creating NATS SAVUP account"
 echo
 echo " Do you want to SKIP this step? (Y/n)"
@@ -157,12 +158,7 @@ if [ "$continue" == "n" ]; then
 	sh $HOME/NATS-1.2.1-create-savup-account.sh
 fi
 
-echo
-echo
-echo
-echo
-echo
-echo "--------------------------"
+displayStepSpacer()
 echo "NEXT: Creating NATS resolver file"
 echo
 echo " Do you want to SKIP this step? (Y/n)"
@@ -173,12 +169,7 @@ if [ "$continue" == "n" ]; then
 	sh $HOME/NATS-1.3.1-edit-jwt-dir.sh
 fi
 
-echo
-echo
-echo
-echo
-echo
-echo "--------------------------"
+displayStepSpacer()
 echo "NEXT: Creating NATS config file"
 echo
 echo " Do you want to SKIP this step? (Y/n)"
@@ -188,12 +179,7 @@ if [ "$continue" == "n" ]; then
 	sh $HOME/NATS-1.4-create-config-file.sh
 fi
 
-echo
-echo
-echo
-echo
-echo
-echo "--------------------------"
+displayStepSpacer()
 echo "==> XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
 echo "==> XX WARNING - VERY IMPORTANT     XX"
 echo "==> XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
@@ -218,12 +204,7 @@ if [ "$continue" == "n" ]; then
 	fi
 fi
 
-echo
-echo
-echo
-echo
-echo
-echo "--------------------------"
+displayStepSpacer()
 echo "NEXT: Pushing NSC account to NATS server"
 echo
 echo " Do you want to SKIP this step? (Y/n)"
@@ -233,12 +214,7 @@ if [ "$continue" == "n" ]; then
 	sh $HOME/NATS-1.6-push-accounts.sh
 fi
 
-echo
-echo
-echo
-echo
-echo
-echo "--------------------------"
+displayStepSpacer()
 echo "NEXT: Creating NATS savup user"
 echo
 echo " Do you want to SKIP this step? (Y/n)"
@@ -248,12 +224,7 @@ if [ "$continue" == "n" ]; then
 	sh $HOME/NATS-1.7-create-savup-user.sh
 fi
 
-echo
-echo
-echo
-echo
-echo
-echo "--------------------------"
+displayStepSpacer()
 echo "NEXT: Creating NATS contexts"
 echo
 echo " Do you want to SKIP this step? (Y/n)"
@@ -263,12 +234,7 @@ if [ "$continue" == "n" ]; then
 	sh $HOME/NATS-1.7.1-create-contexts.sh
 fi
 
-echo
-echo
-echo
-echo
-echo
-echo "--------------------------"
+displayStepSpacer()
 echo "NEXT: Clean up and next steps "
 echo
 echo " Do you want to SKIP this step? (Y/n)"
