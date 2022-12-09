@@ -4,6 +4,9 @@
 # Setting needed variables for NATS install and config scripts
 #
 
+# TODO: Pass variable to sub scripts to make them reusable
+# TODO: Add option to execute all steps except the reboot
+
 echo
 echo "================================"
 echo "  N    N    AA    TTTTTT   SSSS"
@@ -61,6 +64,10 @@ export MY_NATS_USER=savup
 export MY_NATS_URL=nats://0.0.0.0:4222
 #
 
+echo
+echo
+echo
+echo
 echo "--------------------------"
 echo " WARNING"
 echo " WARNING: You are about to remove the existing NATS server and all files!! "
@@ -105,6 +112,10 @@ fi
 
 
 echo
+echo
+echo
+echo
+echo
 echo "--------------------------"
 echo "NEXT: Install NATS server, NATS CLI, and NSC"
 echo
@@ -115,6 +126,10 @@ if [ "$continue" == "n" ]; then
 	sh $HOME/NATS-1.1-install-nats-natscli-nsc.sh
 fi
 
+echo
+echo
+echo
+echo
 echo
 echo "--------------------------"
 echo "NEXT: Creating NATS operator and SYS"
@@ -127,6 +142,10 @@ if [ "$continue" == "n" ]; then
 fi
 
 echo
+echo
+echo
+echo
+echo
 echo "--------------------------"
 echo "NEXT: Creating NATS SAVUP account"
 echo
@@ -137,6 +156,10 @@ if [ "$continue" == "n" ]; then
 	sh $HOME/NATS-1.2.1-create-savup-account.sh
 fi
 
+echo
+echo
+echo
+echo
 echo
 echo "--------------------------"
 echo "NEXT: Creating NATS resolver file"
@@ -150,6 +173,10 @@ if [ "$continue" == "n" ]; then
 fi
 
 echo
+echo
+echo
+echo
+echo
 echo "--------------------------"
 echo "NEXT: Creating NATS config file"
 echo
@@ -160,6 +187,11 @@ if [ "$continue" == "n" ]; then
 	sh $HOME/NATS-1.4-create-config-file.sh
 fi
 
+echo
+echo
+echo
+echo
+echo
 echo "--------------------------"
 echo "==> XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
 echo "==> XX WARNING - VERY IMPORTANT     XX"
@@ -186,6 +218,10 @@ if [ "$continue" == "n" ]; then
 fi
 
 echo
+echo
+echo
+echo
+echo
 echo "--------------------------"
 echo "NEXT: Pushing NSC account to NATS server"
 echo
@@ -196,6 +232,10 @@ if [ "$continue" == "n" ]; then
 	sh $HOME/NATS-1.6-push-accounts.sh
 fi
 
+echo
+echo
+echo
+echo
 echo
 echo "--------------------------"
 echo "NEXT: Creating NATS savup user"
@@ -208,7 +248,11 @@ if [ "$continue" == "n" ]; then
 fi
 
 echo
-echo "==========="
+echo
+echo
+echo
+echo
+echo "--------------------------"
 echo "NEXT: Creating NATS contexts"
 echo
 echo " Do you want to SKIP this step? (Y/n)"
@@ -219,7 +263,11 @@ if [ "$continue" == "n" ]; then
 fi
 
 echo
-echo "==========="
+echo
+echo
+echo
+echo
+echo "--------------------------"
 echo "NEXT: Clean up and next steps "
 echo
 echo " Do you want to SKIP this step? (Y/n)"
