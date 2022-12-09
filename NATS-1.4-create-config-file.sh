@@ -6,7 +6,8 @@
 echo "==> Creating nats-server configuration file"
 cat > "$MY_NATS_HOME/nats.conf" <<- EOF
 
-	listen: localhost:4222
+	#listen: localhost:4222 # This will only allow access on the local host machine
+	listen: 0.0.0.0:4222 # This will allow access from anywhere on the internet
 
 	include 'includes/$MY_NATS_RESOLVER' # Pull in from file
 
