@@ -32,5 +32,5 @@ EOF
 
 msg="Created $MY_NATS_HOME/nats.conf file"
 echo $msg
-echo $msg >>NATS_log_file 2>>$MY_NATS_HOME/NATS_log_file
-echo >>NATS_log_file 2>>$MY_NATS_HOME/NATS_log_file
+echo $msg >>$MY_NATS_HOME/NATS_log_file 2>>$MY_NATS_HOME/NATS_log_file
+echo >>$MY_NATS_HOME/NATS_log_file 2>>$MY_NATS_HOME/NATS_log_file
