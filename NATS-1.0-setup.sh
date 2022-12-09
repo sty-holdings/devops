@@ -79,7 +79,6 @@ if [ "$continue" == "n" ]; then
 	rm -rf $HOME/.local/share
 	rm -rf $HOME/NATS
 	rm -rf $HOME/jwt
-	rm $HOME/NATS_log_file
 	rm $MY_NATS_HOME/NATS_log_file
 	echo
 	echo " Do you want RESTART the system? (y/N)"
@@ -147,6 +146,7 @@ echo "                ----"
 read continue
 if [ "$continue" == "n" ]; then
 	sh $HOME/NATS-1.3-create-resolver-file.sh
+	sh $HOME/NATS-1.3.1-edit-jwt-dir.sh
 fi
 
 echo
@@ -172,9 +172,8 @@ echo " Do you want to SKIP this step? (Y/n)"
 echo "                ----"
 read continue
 if [ "$continue" == "n" ]; then
-	nohup sh $HOME/NATS-1.5-start-server.sh &
+	sh $HOME/NATS-1.5-start-server.sh &
 	sleep 2
-	rm nohup.out
 	sudo ps aux | grep nats-server | awk '/nats.conf/' > /tmp/natsAUX.tmp
 	NATS_PID=$(sudo cat /tmp/natsAUX.tmp | awk '//{print $2}')
 	if [[ -z "$NATS_PID" ]]; then
