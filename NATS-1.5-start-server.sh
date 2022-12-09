@@ -3,7 +3,7 @@
 # This will start the NATS server using the nats.conf file
 
 echo "==> Configuring the NATS Service"
-sudo cp $MY_NATS_HOME/NATS.servicefile /etc/systemd/system/nats.service
+sudo mv $HOME/NATS.servicefile /etc/systemd/system/nats.service
 sudo chmod 755 /etc/systemd/system/nats.service
 sudo systemctl daemon-reload
 
