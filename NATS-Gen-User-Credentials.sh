@@ -19,8 +19,6 @@ echo
 echo "--------------------------"
 echo " Setting script variables "
 #
-# If you make changes here, you may need to make the same change in init.d/nats
-#
 export MY_NSC_BIN=/usr/bin/nsc
 export MY_NATS_HOME=/mnt/disks/nats_home
 #
@@ -28,11 +26,6 @@ export MY_NATS_ACCOUNT=SAVUP
 export MY_NATS_USER=savup
 #
 
-echo
-echo
-echo
-echo
-echo "--------------------------"
 echo " WARNING"
 echo " WARNING: You are creating a user credential file that has sensitive information!!!! "
 echo " WARNING           Handle with care and with system security in mind!!!!"

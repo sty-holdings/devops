@@ -3,6 +3,7 @@
 # This will install NATS, NATS CLI, and NSC
 #
 
+# TODO Make this optional
 if grep -q $MY_NATS_HOME "/etc/fstab"; then
 	echo "==> NATS home is already mounted"
 else

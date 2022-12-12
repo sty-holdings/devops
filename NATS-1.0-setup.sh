@@ -64,9 +64,6 @@ fi
 
 displayStepSpacer()
 echo " Setting script variables "
-#
-# If you make changes here, you may need to make the same change in init.d/nats
-#
 export MY_NATS_BIN=/usr/bin/nats-server
 export MY_NATS_CLI_BIN=/usr/bin/nats
 export MY_NSC_BIN=/usr/bin/nsc
