@@ -1,13 +1,13 @@
 [Unit]
 Description=STYH NATS Service
 After=network.target
-StartLimitIntervalSec=0
+StartLimitIntervalSec=10
 StartLimitBurst=1
 
 [Service]
 Type=simple
 Restart=always
-RestartSec=1
+RestartSec=5
 User=nats
 ExecStart=/usr/bin/nats-server -c /mnt/disks/nats_home/nats.conf
 
