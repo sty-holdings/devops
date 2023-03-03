@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Name: build-NATS-server-instance.sh
+# Name: build-NATS-instance.sh
 #
 # Description: Creates a gcloud instance for running a NATS server.
 #
@@ -27,13 +27,13 @@ GC_SERVER_USER="scott_yacko_sty_holdings_com"
 GC_REGION="us-central1-c"
 GC_INSTANCE_NAME=""
 GC_REMOTE_INSTANCE_LOGIN=""
-GC_PROJECT_NAME=""
+GC_PROJECT_ID=""
 GC_SERVICE_ACCOUNT=""
 GC_INSTANCE_NUMBER=""
 GC_INSTANCE_ADDRESS=""
 GC_FIREWALL_TAGS=""
 
-function build_instance_name() {
+function build_instance_disk_names() {
   # shellcheck disable=SC2155
   local paddedNumber="$(printf %04d "${GC_INSTANCE_NUMBER}")"
   GC_INSTANCE_NAME="nats-${SHORT_TARGET_ENVIRONMENT}-${paddedNumber}"
@@ -65,7 +65,7 @@ function creating_gcloud_firewall_rules() {
 
 function creating_gcloud_instance() {
   print_failure_note "instance"
-  sh ${GCLOUD_ROOT_DIRECTORY}/gcloud-cli-create-instance.sh "$1" "$2" "$3" "$4" "$5"
+  sh ${GCLOUD_ROOT_DIRECTORY}/gcloud-cli-create-instance.sh "$1" "$2" "$3" "$4" "$5" "$6"
   echo -e "${ON_YELLOW}The script is going to pause for 1 minute to allow time for the instance to spin up.${COLOR_OFF}"
   sleep 60
 }
@@ -120,38 +120,21 @@ function print_failure_note() {
 function print_parameters() {
   echo "Here are the values you have supplied:"
   echo -e "Target Environment:\t${TARGET_ENVIRONMENT}"
-  echo -e "GC_PROJECT_NAME=\t${GC_PROJECT_NAME}"
-  echo -e "\t\t\tis set based on the -d or -p argument"
+  echo -e "GC_PROJECT_ID=\t\t${GC_PROJECT_ID}"
+  echo -e "\t\t\tmust match the target environment. Env of dev should have the dev project id."
   echo -e "GC_SERVICE_ACCOUNT=\t${GC_SERVICE_ACCOUNT}"
-  echo -e "\t\t\tis set based on the -d or -p argument"
+  echo -e "\t\t\tmust match the target environment. Env of dev should have the dev service account."
   echo -e "GC_INSTANCE_NUMBER=\t${GC_INSTANCE_NUMBER}"
   echo -e "GC_INSTANCE_ADDRESS=\t${GC_INSTANCE_ADDRESS}"
   echo -e "GC_FIREWALL_TAGS=\t${GC_FIREWALL_TAGS}"
   echo
   echo "Here are the pre-set or defined variables:"
   echo -e "ROOT_DIRECTORY= \t${ROOT_DIRECTORY}"
-  echo -e "SAVUP_DIRECTORY=\t${SAVUP_DIRECTORY}"
   echo -e "TARGET_DIRECTORY=\t${TARGET_DIRECTORY}"
   echo -e "GC_SERVER_USER= \t${GC_SERVER_USER}"
   echo -e "GC_REGION=      \t${GC_REGION}"
   echo -e "GC_INSTANCE_NAME=\t${GC_INSTANCE_NAME}"
   echo -e "GC_REMOTE_INSTANCE_LOGIN=\t${GC_REMOTE_INSTANCE_LOGIN}"
-  echo
-}
-
-function print_usage() {
-  echo
-  echo "This will create an instance on GCloud."
-  echo
-  echo "Usage: ${FILENAME} -h | -d | -p -a {IP address} -n {instance name} -f {firewall tag,...}"
-  echo
-  echo "flags:"
-  echo -e "  -h\t\t\t display help"
-  echo -e "  -d\t\t\t Install a gcloud development instance. (-d | -p Must be first flag provided."
-  echo -e "  -p\t\t\t Install a gcloud production instance. (-d | -p Must be first flag provided."
-  echo -e "  -a {IPV4 address}\t The IPV4 address for the instance. To have an IP address assigned, use 0.0.0.0"
-  echo -e "  -n {number}\t\t The unique number that identifies the instance."
-  echo -e "  -f {tag,...}\t\t Which firewall tags that should be applied to this instance."
   echo
 }
 
@@ -189,11 +172,38 @@ function validate_parameters() {
     local Failed="true"
     print_error "ERROR: The firewall tags parameter is missing"
   fi
+  if [ -z "$GC_PROJECT_ID_CHECKED" ]; then
+    local Failed="true"
+    print_error "ERROR: The Google project id parameter is missing"
+  fi
+  if [ -z "$GC_SERVICE_ACCOUNT_CHECKED" ]; then
+    local Failed="true"
+    print_error "ERROR: The Google service account parameter is missing"
+  fi
 
   if [ "$Failed" == "true" ]; then
     print_usage
     exit 1
   fi
+}
+
+function print_usage() {
+  echo
+  echo "This will create an instance on GCloud."
+  echo
+  echo "Usage: ${FILENAME} -h, -d | -p, -a {argument}, -f {argument}, -n {argument}, -g {Google project id}, -s {Google service account}"
+  echo
+  echo "flags:"
+  echo -e "  -h\t\t\t display help"
+  echo -e "  -d\t\t\t Install a gcloud development instance. (-d | -p Must be first flag provided."
+  echo -e "  -p\t\t\t Install a gcloud production instance. (-d | -p Must be first flag provided."
+  echo -e "  -a {IPV4 address}\t The IPV4 address for the instance. To have an IP address assigned, use 0.0.0.0"
+  echo -e "  -n {number}\t\t The unique number that identifies the instance."
+  echo -e "  -f {tag,...}\t\t Which firewall tags that should be applied to this instance."
+  echo -e "  -g {project id}\t The project id that matches the environment. Project Id for dev vs the project id for production."
+  echo -e "  -s {service account}\t The service account for the Project Id. This can be found in IAM & Admin > Service Accounts by"
+  echo -e "\t\t\t clicking on Computer Engine default service account. You want the number at the beginning of the email."
+  echo
 }
 
 # Main function of this script
@@ -211,7 +221,7 @@ function run_script {
 
   display_savup
 
-  while getopts 'd|pa:f:n:h' OPT; do # -h -d | -p, -a {argument}, -f {argument}, -n {argument}
+  while getopts 'd|pa:f:n:g:s:h' OPT; do
     case "$OPT" in
     a)
       set_variable GC_INSTANCE_ADDRESS "$OPTARG"
@@ -219,11 +229,15 @@ function run_script {
     d)
       set_variable TARGET_ENVIRONMENT "development"
       SHORT_TARGET_ENVIRONMENT="dev"
-      GC_PROJECT_NAME=savup-development
-      GC_SERVICE_ACCOUNT=914442230861
       ;;
     f)
       set_variable GC_FIREWALL_TAGS "$OPTARG"
+      ;;
+    g)
+      set_variable GC_PROJECT_ID "$OPTARG"
+      ;;
+    s)
+      set_variable GC_SERVICE_ACCOUNT "$OPTARG"
       ;;
     h)
       print_usage
@@ -235,11 +249,9 @@ function run_script {
     p)
       set_variable TARGET_ENVIRONMENT "production"
       SHORT_TARGET_ENVIRONMENT="prod"
-      GC_PROJECT_NAME=savup-f3343
-      GC_SERVICE_ACCOUNT=212575879830
       ;;
     *)
-      print_error "ERROR: The parameters are -h, -d | -p, -a {argument}, -f {argument}, -n {argument}" >&2
+      print_error "ERROR: The parameters are -h, -d | -p, -a {argument}, -f {argument}, -n {argument}, -g {Google project id}, -s {Google service account}" >&2
       print_usage
       exit 1
       ;;
@@ -247,7 +259,7 @@ function run_script {
   done
 
   validate_parameters
-  build_instance_name
+  build_instance_disk_names
   build_remote_instance_login
   print_parameters
 
@@ -256,10 +268,13 @@ function run_script {
     exit 9
   fi
 
-  # The gcloud config set $GC_PROJECT_NAME is required to make sure the resources are built in the correct project.
-  gcloud config set project "$GC_PROJECT_NAME"
+  # The gcloud config set $GC_PROJECT_ID is required to make sure the resources are built in the correct project.
+  gcloud config set project "$GC_PROJECT_ID"
   creating_gcloud_firewall_rules
-  creating_gcloud_instance "$GC_INSTANCE_NAME" "$GC_REGION" "$GC_INSTANCE_ADDRESS" "$GC_SERVICE_ACCOUNT" "$GC_FIREWALL_TAGS"
+  creating_gcloud_instance "$GC_PROJECT_ID" "$GC_INSTANCE_NAME" "$GC_REGION" "$GC_INSTANCE_ADDRESS" "$GC_SERVICE_ACCOUNT" "$GC_FIREWALL_TAGS"
+
+exit 0
+
   creating_gcloud_directories "$GC_REGION" "$GC_REMOTE_INSTANCE_LOGIN" "$TARGET_DIRECTORY"
   copying_file_gcloud_instance "$GC_REGION" "$GC_REMOTE_INSTANCE_LOGIN" "$NATS_ROOT_DIRECTORY" "$TARGET_DIRECTORY"
   executing_gcloud_base_configuration
