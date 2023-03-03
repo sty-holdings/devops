@@ -17,10 +17,11 @@ set -eo pipefail
 # shellcheck disable=SC2006
 FILENAME=$(basename "$0")
 # Directory and files
-ROOT_DIRECTORY=/Users/syacko/workspace/styh-dev/src/albert
-SAVUP_DIRECTORY=/SavUpServer
-SAVUP_ROOT_DIRECTORY=${ROOT_DIRECTORY}${SAVUP_DIRECTORY}
-TARGET_DIRECTORY=/home/scott_yacko_sty_holdings_com/styh/server
+ROOT_DIRECTORY=/Users/syacko/workspace/styh-dev/devops
+GCLOUD_ROOT_DIRECTORY=${ROOT_DIRECTORY}/gcloud
+NATS_ROOT_DIRECTORY=${ROOT_DIRECTORY}/nats_server_setup
+SHARED_DIRECTORY=${ROOT_DIRECTORY}/shared
+TARGET_DIRECTORY=/home/scott_yacko_sty_holdings_com
 # GCloud variables
 GC_SERVER_USER="scott_yacko_sty_holdings_com"
 GC_REGION="us-central1-c"
@@ -35,7 +36,7 @@ GC_FIREWALL_TAGS=""
 function build_instance_name() {
   # shellcheck disable=SC2155
   local paddedNumber="$(printf %04d "${GC_INSTANCE_NUMBER}")"
-  GC_INSTANCE_NAME="savup-${SHORT_TARGET_ENVIRONMENT}-${paddedNumber}"
+  GC_INSTANCE_NAME="nats-${SHORT_TARGET_ENVIRONMENT}-${paddedNumber}"
 }
 
 function build_remote_instance_login() {
@@ -43,26 +44,28 @@ function build_remote_instance_login() {
 }
 
 function copying_file_gcloud_instance() {
-  print_failure_note "copy or setting permission"
-  sh ${SAVUP_ROOT_DIRECTORY}/devops/scripts/gcloud_copy_savup_files.sh "$1" "$2" "$3" "$4" "$5" "$6"
+  print_failure_note "copy file and setting permission"
+  gcloud compute scp --recurse --zone "${GC_REGION}" "${ROOT_DIRECTORY}/shared/echo-colors.sh" "${GC_REMOTE_INSTANCE_LOGIN}:${TARGET_DIRECTORY}/scripts/."
+  gcloud compute scp --recurse --zone "${GC_REGION}" "${ROOT_DIRECTORY}/0-config-instance.sh" "${GC_REMOTE_INSTANCE_LOGIN}:${TARGET_DIRECTORY}/scripts/."
+  sh ${NATS_ROOT_DIRECTORY}/gcloud_copy_nats_files.sh "$1" "$2" "$3" "$4"
   echo
 }
 
 function creating_gcloud_directories() {
   print_failure_note "directory"
-  sh ${SAVUP_ROOT_DIRECTORY}/devops/scripts/gcloud-cli-create-directories.sh "$1" "$2" "$3"
+  sh ${GCLOUD_ROOT_DIRECTORY}/gcloud-cli-create-directories.sh "$1" "$2" "$3"
   echo
 }
 
 function creating_gcloud_firewall_rules() {
   print_failure_note "firewall rule"
-  sh ${SAVUP_ROOT_DIRECTORY}/devops/scripts/gcloud-cli-create-firewall-rules.sh
+  sh ${GCLOUD_ROOT_DIRECTORY}/gcloud-cli-create-nats-firewall-rules.sh
   echo
 }
 
 function creating_gcloud_instance() {
   print_failure_note "instance"
-  sh ${SAVUP_ROOT_DIRECTORY}/devops/scripts/gcloud-cli-create-instance.sh "$1" "$2" "$3" "$4" "$5"
+  sh ${GCLOUD_ROOT_DIRECTORY}/gcloud-cli-create-instance.sh "$1" "$2" "$3" "$4" "$5"
   echo -e "${ON_YELLOW}The script is going to pause for 1 minute to allow time for the instance to spin up.${COLOR_OFF}"
   sleep 60
 }
@@ -100,18 +103,10 @@ function executing_gcloud_base_configuration() {
   echo "Starting base configuration of the instance."
   gcloud compute ssh --zone "${GC_REGION}" "${GC_REMOTE_INSTANCE_LOGIN}" --command "sh ${TARGET_DIRECTORY}/scripts/0-config-instance.sh"
   echo "Base configuration has been applied to the GCloud instance"
-  # Test if messages are getting to the SavUp Server
-  display_step_spacer
-  if [ "${TARGET_ENVIRONMENT}" == "development" ]; then
-    nats request "SAVUPDEV.command.shutdown" ""
-  else
-    nats request "SAVUP.command.shutdown" ""
-  fi
-  display_step_spacer
 }
 
 function init_script() {
-  . /Users/syacko/workspace/styh-dev/src/albert/shared/devops/scripts/echo-colors.sh
+  . "${SHARED_DIRECTORY}"/echo-colors.sh
 }
 
 function print_error() {
@@ -146,7 +141,7 @@ function print_parameters() {
 
 function print_usage() {
   echo
-  echo "This will create an instance  on GCloud."
+  echo "This will create an instance on GCloud."
   echo
   echo "Usage: ${FILENAME} -h | -d | -p -a {IP address} -n {instance name} -f {firewall tag,...}"
   echo
@@ -154,7 +149,7 @@ function print_usage() {
   echo -e "  -h\t\t\t display help"
   echo -e "  -d\t\t\t Install a gcloud development instance. (-d | -p Must be first flag provided."
   echo -e "  -p\t\t\t Install a gcloud production instance. (-d | -p Must be first flag provided."
-  echo -e "  -a {IPV4 address}\t The IPV4 address for the instance."
+  echo -e "  -a {IPV4 address}\t The IPV4 address for the instance. To have an IP address assigned, use 0.0.0.0"
   echo -e "  -n {number}\t\t The unique number that identifies the instance."
   echo -e "  -f {tag,...}\t\t Which firewall tags that should be applied to this instance."
   echo
@@ -262,11 +257,11 @@ function run_script {
   fi
 
   # The gcloud config set $GC_PROJECT_NAME is required to make sure the resources are built in the correct project.
-  gcloud config set project $GC_PROJECT_NAME
+  gcloud config set project "$GC_PROJECT_NAME"
   creating_gcloud_firewall_rules
   creating_gcloud_instance "$GC_INSTANCE_NAME" "$GC_REGION" "$GC_INSTANCE_ADDRESS" "$GC_SERVICE_ACCOUNT" "$GC_FIREWALL_TAGS"
   creating_gcloud_directories "$GC_REGION" "$GC_REMOTE_INSTANCE_LOGIN" "$TARGET_DIRECTORY"
-  copying_file_gcloud_instance "$GC_REGION" "$GC_REMOTE_INSTANCE_LOGIN" "$ROOT_DIRECTORY" "$SAVUP_ROOT_DIRECTORY" "$TARGET_ENVIRONMENT" "$TARGET_DIRECTORY"
+  copying_file_gcloud_instance "$GC_REGION" "$GC_REMOTE_INSTANCE_LOGIN" "$NATS_ROOT_DIRECTORY" "$TARGET_DIRECTORY"
   executing_gcloud_base_configuration
   restarting_gcloud_instance
 

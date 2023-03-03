@@ -17,8 +17,10 @@ set -eo pipefail
 # shellcheck disable=SC2006
 FILENAME=$(basename "$0")
 # Directory and files
-ROOT_DIRECTORY=/home/scott_yacko_sty_holdings_com
-SCRIPT_DIRECTORY=${ROOT_DIRECTORY}/scripts
+#ROOT_DIRECTORY=/home/scott_yacko_sty_holdings_com # Production
+ROOT_DIRECTORY=/Users/syacko/workspace/styh-dev/devops # Testing Only
+#SCRIPT_DIRECTORY=${ROOT_DIRECTORY}/scripts  # Production
+SCRIPT_DIRECTORY=${ROOT_DIRECTORY}/shared  # Testing Only
 NATS_OPERATOR=""
 NATS_ACCOUNT=""
 NATS_USER=""
@@ -34,6 +36,7 @@ MY_NATS_RESOLVER=resolver.conf
 MY_NATS_CONF=nats.conf
 MY_NATS_PID=nats.pid
 MY_NATS_PID_RUNNING=nats.pid.running
+WARNING_MESSAGE=""
 
 function init_script() {
   . "${SCRIPT_DIRECTORY}"/echo-colors.sh
@@ -65,6 +68,13 @@ function displayAlert() {
 	echo
 }
 
+function displayWarning() {
+  echo -e "${ON_YELLOW} WARNING${COLOR_OFF}"
+  echo -e "${ON_YELLOW} WARNING: ${WARNING_MESSAGE}${COLOR_OFF}"
+  echo -e "${ON_YELLOW} WARNING${COLOR_OFF}"
+  echo
+}
+
 function displayStepSpacer() {
 	echo "--------------------------"
 }
@@ -73,20 +83,24 @@ function isNATSAlreadyRunning() {
   sudo ps aux | grep nats-server | awk '/nats.conf/' > /tmp/natsAUX.tmp
   NATS_PID=$(sudo cat /tmp/natsAUX.tmp | awk '//{print $2}')
 
-  if [ -z "$NATS_PID" ]; then
+  if [[ -n "$NATS_PID" ]]; then
    	displayAlert
-    	echo " A NATS Server is already running on this system."
+    	echo -e "${ON_RED} A NATS Server is already running on this system.${COLOR_OFF}"
     	echo
-    	echo " Please investigate the configuration of this system."
+    	echo -e "${ON_RED} Please investigate the configuration of this system.${COLOR_OFF}"
     	echo
-    	echo "NATS PID: $NATS_PID"
+    	echo -e "${ON_RED} NATS PID:${COLOR_OFF} $NATS_PID"
     	echo
-    	echo "You must stop NATS before this script will run."
+    	echo -e "${ON_RED} You must stop NATS before this script will run.${COLOR_OFF}"
     	echo
-    	echo "run: kill -USR2 $NATS_PID"
+    	echo -e "${ON_RED} run: kill -USR2 $NATS_PID${COLOR_OFF}"
     	echo
     	exit 1
   fi
+}
+
+function print_error() {
+  echo -e "${ON_RED}$1${COLOR_OFF}"
 }
 
 function set_variable() {
@@ -97,22 +111,75 @@ function set_variable() {
 }
 
 function validate_parameters() {
-  if [ -z "$GC_INSTANCE_ADDRESS_CHECKED" ]; then
+  if [ -z "$NATS_OPERATOR_CHECKED" ]; then
     local Failed="true"
-    print_error "ERROR: The address parameter is missing"
+    print_error "ERROR: The operator parameter is missing"
   fi
-  if [ -z "$GC_INSTANCE_NUMBER_CHECKED" ]; then
+  if [ -z "$NATS_ACCOUNT_CHECKED" ]; then
     local Failed="true"
-    print_error "ERROR: The number parameter is missing"
+    print_error "ERROR: The account parameter is missing"
   fi
-  if [ -z "$GC_FIREWALL_TAGS_CHECKED" ]; then
+  if [ -z "$NATS_USER_CHECKED" ]; then
     local Failed="true"
-    print_error "ERROR: The firewall tags parameter is missing"
+    print_error "ERROR: The user parameter is missing"
+  fi
+  if [ -z "$NATS_URL_CHECKED" ]; then
+    local Failed="true"
+    print_error "ERROR: The URL parameter is missing"
+  fi
+  if [ -z "$NATS_SERVER_NAME_CHECKED" ]; then
+    local Failed="true"
+    print_error "ERROR: The server name parameter is missing"
   fi
 
   if [ "$Failed" == "true" ]; then
     print_usage
     exit 1
+  fi
+}
+
+function print_parameters() {
+  echo "Here are the values you have supplied:"
+  echo -e "NATS_OPERATOR:\t     ${NATS_OPERATOR}"
+  echo -e "NATS_ACCOUNT:\t     ${NATS_ACCOUNT}"
+  echo -e "NATS_USER:\t     ${NATS_USER}"
+  echo -e "NATS_URL:\t     ${NATS_URL}"
+  echo -e "NATS_SERVER_NAME:    ${NATS_SERVER_NAME}"
+  echo -e "NATS_WEBSOCKET_PORT: ${NATS_WEBSOCKET_PORT}"
+  echo
+  echo "Here are the pre-set or defined variables:"
+  echo -e "ROOT_DIRECTORY:   ${ROOT_DIRECTORY}"
+  echo -e "SCRIPT_DIRECTORY: ${SCRIPT_DIRECTORY}"
+  echo
+}
+
+function removeNATS() {
+  WARNING_MESSAGE="You are about to remove any existing NATS software from the instance!!"
+  displayWarning
+  echo -e " Do you want to ${ON_GREEN}SKIP${COLOR_OFF} this step? (${ON_GREEN}Y${COLOR_OFF}/n)"
+  read -r continue
+  if [ "$continue" == "n" ]; then
+    sudo rm -rf $MY_NATS_HOME/*
+    sudo rm $MY_NATS_BIN
+   	sudo rm $MY_NATS_CLI_BIN
+   	sudo rm $MY_NSC_BIN
+   	rm -rf "$HOME"/.config/NATS
+   	rm -rf "$HOME"/.local/NATS
+   	rm -rf "$HOME"/.local/share
+   	rm -rf "$HOME"/NATS
+   	rm -rf "$HOME"/jwt
+   	rm "$MY_NATS_HOME"/NATS_log_file
+  else
+    echo "You elected to skip this step"
+  fi
+}
+
+function restartSystem() {
+  echo " Do you want ${ON_GREEN}RESTART${COLOR_OFF} the system? (y/${ON_GREEN}N${COLOR_OFF})"
+  	read -r restart
+  if [ "$restart" == "y" ]; then
+  	sudo shutdown -r now
+  	exit
   fi
 }
 
@@ -123,13 +190,13 @@ function print_usage() {
   echo "Usage: ${FILENAME} -h | -o {operator name} -a {account name} -u {user name} -n {url} -s {server name} -w {port number}"
   echo
   echo "flags:"
-  echo -e "  -h\t\t display help"
-  echo -e "  -o {operator name} The name of the operator."
-  echo -e "  -a {account name}  The name of the starter account."
-  echo -e "  -u {user name} The name of the starter user."
-  echo -e "  -n {url} The URL for the server. This has to be set up in DNS or the host file."
-  echo -e "  -s {server name} The instance name of the server."
-  echo -e "  -w {port number} Optional - Websocket port number. Recommend 9222"
+  echo -e "  -h\t\t\t display help"
+  echo -e "  -o {operator name}\t The name of the operator."
+  echo -e "  -a {account name}\t The name of the starter account."
+  echo -e "  -u {user name}\t The name of the starter user."
+  echo -e "  -n {url}\t\t The URL for the server. This has to be set up in DNS or the host file."
+  echo -e "  -s {server name}\t The instance name of the server."
+  echo -e "  -w {port number}\t Optional - Websocket port number. Recommended to use 9222"
   echo
 }
 
@@ -169,40 +236,17 @@ function run_script {
       exit 0
       ;;
     *)
-      print_error "${RED}ERROR: Please review the usage printed below:${COLOR_OFF}" >&2
+      print_error "${ON_RED}ERROR: Please review the usage printed below:${COLOR_OFF}" >&2
       print_usage
       exit 1
       ;;
     esac
   done
 
-#displayStepSpacer()
-#echo " WARNING"
-#echo " WARNING: You are about to remove the existing NATS server and all files!! "
-#echo " WARNING"
-#echo
-#echo " Do you want to SKIP this step? (Y/n)"
-#echo "                ----"
-#read continue
-#if [ "$continue" == "n" ]; then
-#	sudo rm -rf $MY_NATS_HOME/*
-#	sudo rm $MY_NATS_BIN
-#	sudo rm $MY_NATS_CLI_BIN
-#	sudo rm $MY_NSC_BIN
-#	rm -rf $HOME/.config/NATS
-#	rm -rf $HOME/.local/NATS
-#	rm -rf $HOME/.local/share
-#	rm -rf $HOME/NATS
-#	rm -rf $HOME/jwt
-#	rm $MY_NATS_HOME/NATS_log_file
-#	echo
-#	echo " Do you want RESTART the system? (y/N)"
-#	echo "             -------"
-#		read restart
-#	if [ "$restart" == "y" ]; then
-#		sudo shutdown -r now
-#		exit
-#	fi
+  validate_parameters
+  print_parameters
+  removeNATS
+
 #fi
 #
 #echo
