@@ -16,26 +16,13 @@ UPGRADE_DONE=.apt_upgrade.dont_delete
 
 sudo apt update
 
-if ! [ -f $HOME/$UPGRADE_DONE ]; then
+if ! [ -f "${HOME}/$UPGRADE_DONE" ]; then
 	sudo apt-get install acl -y
 	sudo apt-get install mlocate -y
 	sudo apt-get install unzip -y
 	sudo apt-get install zip -y
-	sudo apt-get upgrade apport -y
-	sudo apt-get upgrade libexpat1 -y
-	sudo apt-get upgrade libglib2.0-0 -y
-	sudo apt-get upgrade libglib2.0-data -y
-	sudo apt-get upgrade linux-gc -y
-	sudo apt-get upgrade linux-headers-gcp -y
-	sudo apt-get upgrade linux-image-gcp -y
-	sudo apt-get upgrade login -y
-	sudo apt-get upgrade passwd -y
-	sudo apt-get upgrade python3-apport -y
-	sudo apt-get upgrade snapd -y
-	sudo apt-get upgrade ubuntu-advantage-tools -y
-	sudo apt-get upgrade cloud-init -y
-	sudo apt-get upgrade python3-distupgrade -y
-	touch $HOME/$UPGRADE_DONE
+	sudo apt-get upgrade tcpdump -y
+	touch "${HOME}"/"${UPGRADE_DONE}"
 fi
 
 echo
@@ -44,24 +31,24 @@ if grep -q "$HOME/$BASH_EXPORTS" "$HOME/$BASHRC"; then
 	echo "==> $BASHRC is already updated to load $BASH_EXPORTS"
 else
 	echo "==> Adding exports loading to $BASHRC"
-	cp $HOME/$BASHRC $HOME/$ORIGINAL$BASHRC
-	cat >> "$HOME/$BASHRC" <<- EOF
-		if [ -f $HOME/$BASH_EXPORTS ]; then
-    	. $HOME/$BASH_EXPORTS
+	cp "${HOME}/${BASHRC}" "${HOME}/${ORIGINAL}${BASHRC}"
+	cat >> "${HOME}/${BASHRC}" <<- EOF
+		if [ -f "${HOME}/${BASH_EXPORTS}" ]; then
+    	. "${HOME}/${BASH_EXPORTS}"
 		fi
 	EOF
 fi
 
 echo
 echo "==> Updating $PROFILE"
-if [ -f "$HOME/$ORIGINAL$PROFILE" ]; then
-  cp "$HOME/$ORIGINAL$PROFILE" "$HOME/$PROFILE"
+if [ -f "${HOME}/${ORIGINAL}${PROFILE}" ]; then
+  cp "${HOME}/${ORIGINAL}${PROFILE}" "${HOME}/${PROFILE}"
 else
-	cp "$HOME/$PROFILE" "$HOME/$ORIGINAL$PROFILE"
+	cp "${HOME}/${PROFILE}" "${HOME}/${ORIGINAL}${PROFILE}"
 fi
 
 
-cat >> "$HOME/$PROFILE" <<- EOF
+cat >> "${HOME}/${PROFILE}" <<- EOF
 	
 	#
 	# STYH startup profile
@@ -86,7 +73,7 @@ EOF
 
 echo
 echo "==> Creating the $BASH_ALIASES"
-cat > "$HOME/$BASH_ALIASES" <<- EOF
+cat > "${HOME}/${BASH_ALIASES}" <<- EOF
 	#
 	# GOLANG
 	#
@@ -134,7 +121,7 @@ EOF
 
 echo
 echo "==> Creating the $BASH_EXPORTS"
-cat > "$HOME/$BASH_EXPORTS" <<- EOF
+cat > "${HOME}/${BASH_EXPORTS}" <<- EOF
 
 	# To add exports, make sure to update the 0-config-instance.sh file in the devops GITHUB repository
 
@@ -142,14 +129,14 @@ EOF
 
 echo
 echo "==> Updating $VIMRC"
-if [ -f "$VIMRC_OG" ]; then
-  sudo cp "$VIMRC_OG" "$VIMRC"
+if [ -f "${VIMRC_OG}" ]; then
+  sudo cp "${VIMRC_OG}" "$VIMRC"
 else
-	sudo cp "$VIMRC" "$VIMRC_OG"
-	sudo chmod 666 $VIMRC
+	sudo cp "${VIMRC}" "${VIMRC_OG}"
+	sudo chmod 666 "${VIMRC}"
 	echo
-	echo "==> Updating the $VIMRC"
-	sudo cat >> "$VIMRC" <<- EOF
+	echo "==> Updating the ${VIMRC}"
+	sudo cat >> "${VIMRC}" <<- EOF
 
 	"
 	" STYH global configuration
@@ -168,7 +155,7 @@ else
 	set hlsearch
 	EOF
 fi
-sudo chmod 644 "$VIMRC"
+sudo chmod 644 "${VIMRC}"
 
 echo
 echo
