@@ -156,12 +156,3 @@ else
 	EOF
 fi
 sudo chmod 644 "${VIMRC}"
-
-echo
-echo
-echo "==> You must run: sudo shutdown -r now"
-echo " This will load the changes made to the system."
-echo
-echo 
-echo "==> Done"
-echo

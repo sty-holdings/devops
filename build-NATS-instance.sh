@@ -26,7 +26,7 @@ TARGET_DIRECTORY=/home/scott_yacko_sty_holdings_com
 GC_SERVER_USER="scott_yacko_sty_holdings_com"
 GC_REGION="us-central1-c"
 GC_INSTANCE_NAME=""
-GC_REMOTE_INSTANCE_LOGIN=""
+GC_REMOTE_LOGIN=""
 GC_PROJECT_ID=""
 GC_SERVICE_ACCOUNT=""
 GC_INSTANCE_NUMBER=""
@@ -40,14 +40,13 @@ function build_instance_disk_names() {
 }
 
 function build_remote_instance_login() {
-  GC_REMOTE_INSTANCE_LOGIN=${GC_SERVER_USER}@${GC_INSTANCE_NAME}
+  GC_REMOTE_LOGIN=${GC_SERVER_USER}@${GC_INSTANCE_NAME}
 }
 
 function copying_file_gcloud_instance() {
   print_failure_note "copy file and setting permission"
-  gcloud compute scp --recurse --zone "${GC_REGION}" "${ROOT_DIRECTORY}/shared/echo-colors.sh" "${GC_REMOTE_INSTANCE_LOGIN}:${TARGET_DIRECTORY}/scripts/."
-  gcloud compute scp --recurse --zone "${GC_REGION}" "${ROOT_DIRECTORY}/0-config-instance.sh" "${GC_REMOTE_INSTANCE_LOGIN}:${TARGET_DIRECTORY}/scripts/."
-  sh ${NATS_ROOT_DIRECTORY}/gcloud_copy_nats_files.sh "$1" "$2" "$3" "$4"
+  sh ${GCLOUD_ROOT_DIRECTORY}/gcloud-cli-copy-supporting-files.sh "$1" "$2" "$3" "$5"
+  sh ${NATS_ROOT_DIRECTORY}/gcloud_cli_copy_nats_files.sh "$1" "$2" "$4" "$5"
   echo
 }
 
@@ -66,8 +65,13 @@ function creating_gcloud_firewall_rules() {
 function creating_gcloud_instance() {
   print_failure_note "instance"
   sh ${GCLOUD_ROOT_DIRECTORY}/gcloud-cli-create-instance.sh "$1" "$2" "$3" "$4" "$5" "$6"
-  echo -e "${ON_YELLOW}The script is going to pause for 1 minute to allow time for the instance to spin up.${COLOR_OFF}"
-  sleep 60
+  echo -e "${ON_YELLOW}The script is going to pause for 30 seconds to allow time for the instance to spin up.${COLOR_OFF}"
+  sleep 30
+}
+
+function mount_nats_drive() {
+  sh ${GCLOUD_ROOT_DIRECTORY}/gcloud-cli-mount-drive.sh "$1" "$2" "$3"
+  echo
 }
 
 function display_alert() {
@@ -101,7 +105,7 @@ function display_step_spacer() {
 
 function executing_gcloud_base_configuration() {
   echo "Starting base configuration of the instance."
-  gcloud compute ssh --zone "${GC_REGION}" "${GC_REMOTE_INSTANCE_LOGIN}" --command "sh ${TARGET_DIRECTORY}/scripts/0-config-instance.sh"
+  gcloud compute ssh --zone "${GC_REGION}" "${GC_REMOTE_LOGIN}" --command "sh ${TARGET_DIRECTORY}/scripts/0-config-instance.sh"
   echo "Base configuration has been applied to the GCloud instance"
 }
 
@@ -130,17 +134,20 @@ function print_parameters() {
   echo
   echo "Here are the pre-set or defined variables:"
   echo -e "ROOT_DIRECTORY= \t${ROOT_DIRECTORY}"
+  echo -e "GCLOUD_ROOT_DIRECTORY=\t${ROOT_DIRECTORY}/gcloud"
+  echo -e "NATS_ROOT_DIRECTORY=\t${ROOT_DIRECTORY}/nats_server_setup"
+  echo -e "SHARED_DIRECTORY=\t${ROOT_DIRECTORY}/shared"
   echo -e "TARGET_DIRECTORY=\t${TARGET_DIRECTORY}"
   echo -e "GC_SERVER_USER= \t${GC_SERVER_USER}"
   echo -e "GC_REGION=      \t${GC_REGION}"
   echo -e "GC_INSTANCE_NAME=\t${GC_INSTANCE_NAME}"
-  echo -e "GC_REMOTE_INSTANCE_LOGIN=\t${GC_REMOTE_INSTANCE_LOGIN}"
+  echo -e "GC_REMOTE_LOGIN=\t${GC_REMOTE_LOGIN}"
   echo
 }
 
 function restarting_gcloud_instance() {
   # Restarting the GCloud Instance
-  gcloud compute ssh --zone "${GC_REGION}" "${GC_REMOTE_INSTANCE_LOGIN}" --command "sudo shutdown -r now"
+  gcloud compute ssh --zone "${GC_REGION}" "${GC_REMOTE_LOGIN}" --command "sudo shutdown -r now"
   echo -e "${ON_YELLOW}The script is going to pause for 1 minute to allow time for the instance to spin up after the reboot.${COLOR_OFF}"
   sleep 60
 }
@@ -272,15 +279,20 @@ function run_script {
   gcloud config set project "$GC_PROJECT_ID"
   creating_gcloud_firewall_rules
   creating_gcloud_instance "$GC_PROJECT_ID" "$GC_INSTANCE_NAME" "$GC_REGION" "$GC_INSTANCE_ADDRESS" "$GC_SERVICE_ACCOUNT" "$GC_FIREWALL_TAGS"
-
-exit 0
-
-  creating_gcloud_directories "$GC_REGION" "$GC_REMOTE_INSTANCE_LOGIN" "$TARGET_DIRECTORY"
-  copying_file_gcloud_instance "$GC_REGION" "$GC_REMOTE_INSTANCE_LOGIN" "$NATS_ROOT_DIRECTORY" "$TARGET_DIRECTORY"
+  mount_nats_drive "$GC_REGION" "$GC_REMOTE_LOGIN" "$GC_SERVER_USER"
+  creating_gcloud_directories "$GC_REGION" "$GC_REMOTE_LOGIN" "$TARGET_DIRECTORY"
+  copying_file_gcloud_instance "$GC_REGION" "$GC_REMOTE_LOGIN" "$SHARED_DIRECTORY" "$NATS_ROOT_DIRECTORY" "$TARGET_DIRECTORY"
   executing_gcloud_base_configuration
   restarting_gcloud_instance
 
-  echo
+  echo "Check the following items to see if the installation complete:"
+  echo -e "\tYou can connect to the $(GC_INSTANCE_NAME)"
+  echo -e "\tThe following directories exist:"
+  echo -e "\t\t$(TARGET_DIRECTORY)"
+  echo -e "\t\t$(TARGET_DIRECTORY)/scripts"
+  echo -e "\tThere are files in the scripts directory"
+  echo -e "\t/etc/original.fstab exists"
+  echo -e "\tYou can enter lsl on the command line and get a list of files."
   echo "Done"
   echo
 }
