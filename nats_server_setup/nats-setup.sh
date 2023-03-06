@@ -20,21 +20,20 @@ FILENAME=$(basename "$0")
 ROOT_DIRECTORY=/home/scott_yacko_sty_holdings_com # Remote instance
 SCRIPT_DIRECTORY=${ROOT_DIRECTORY}/scripts  # Remote instance
 NATS_OPERATOR=""
-NATS_ACCOUNT=""
+NATS_USER_ACCOUNT=""
 NATS_USER=""
 NATS_URL=""
 NATS_SERVER_NAME=""
 NATS_WEBSOCKET_PORT=""
 # Internal Variables
-MY_NATS_BIN=/usr/bin/nats-server
-MY_NATS_CLI_BIN=/usr/bin/nats
-MY_NSC_BIN=/usr/bin/nsc
-MY_NATS_HOME=/mnt/disks/nats_home
-MY_NATS_RESOLVER=resolver.conf
-MY_NATS_CONF=nats.conf
-MY_NATS_PID=nats.pid
-MY_NATS_PID_RUNNING=nats.pid.running
-WARNING_MESSAGE=""
+NATS_BIN=/usr/bin/nats-server
+NATSCLI_BIN=/usr/bin/nats
+NSC_BIN=/usr/bin/nsc
+NATS_HOME=/mnt/disks/nats_home
+NATS_RESOLVER=resolver.conf
+NATS_CONF=nats.conf
+NATS_PID=nats.pid
+NATS_PID_RUNNING=nats.pid.running
 
 function init_script() {
   . "${SCRIPT_DIRECTORY}"/echo-colors.sh
@@ -67,8 +66,7 @@ function displayAlert() {
 }
 
 function displayWarning() {
-  echo -e "${ON_YELLOW} WARNING: ${WARNING_MESSAGE}${COLOR_OFF}"
-  echo
+  echo -e "${BLACK}${ON_YELLOW}WARNING: $1${COLOR_OFF}"
 }
 
 function displayStepSpacer() {
@@ -76,10 +74,10 @@ function displayStepSpacer() {
 }
 
 function displaySkipMessage() {
-  if [ "$1" == "y" ]; then
-    echo -e " Do you want to ${ON_GREEN}SKIP${COLOR_OFF} this step? (${ON_GREEN}Y${COLOR_OFF}/n)"
+  if [[ ( "$1" == "Y" ) || ( "$1" == "y" ) ]]; then
+    echo -e " Do you want to ${BLACK}${ON_YELLOW}SKIP${COLOR_OFF} this step? (${BLACK}${ON_YELLOW}Y${COLOR_OFF}/n)"
   else
-    echo -e " Do you want to ${ON_GREEN}SKIP${COLOR_OFF} this step? y/(${ON_GREEN}N${COLOR_OFF})"
+    echo -e " Do you want to ${BLACK}${ON_YELLOW}SKIP${COLOR_OFF} this step? (y/${BLACK}${ON_YELLOW}N${COLOR_OFF})"
   fi
 }
 
@@ -119,9 +117,9 @@ function validate_parameters() {
     local Failed="true"
     print_error "ERROR: The operator parameter is missing"
   fi
-  if [ -z "$NATS_ACCOUNT_CHECKED" ]; then
+  if [ -z "$NATS_USER_ACCOUNT_CHECKED" ]; then
     local Failed="true"
-    print_error "ERROR: The account parameter is missing"
+    print_error "ERROR: The user account parameter is missing"
   fi
   if [ -z "$NATS_USER_CHECKED" ]; then
     local Failed="true"
@@ -142,92 +140,78 @@ function validate_parameters() {
   fi
 }
 
-function print_parameters() {
-  echo "Here are the values you have supplied:"
-  echo -e "NATS_OPERATOR:\t     ${NATS_OPERATOR}"
-  echo -e "NATS_ACCOUNT:\t     ${NATS_ACCOUNT}"
-  echo -e "NATS_USER:\t     ${NATS_USER}"
-  echo -e "NATS_URL:\t     ${NATS_URL}"
-  echo -e "NATS_SERVER_NAME:    ${NATS_SERVER_NAME}"
-  if [ -z "${NATS_WEBSOCKET_PORT}" ]; then
-  echo -e "NATS_WEBSOCKET_PORT: ${NATS_WEBSOCKET_PORT}"
-  else
-  echo -e "NATS_WEBSOCKET_PORT: ${NATS_WEBSOCKET_PORT}"
-  fi-
-  echo
-  echo "Here are the pre-set or defined variables:"
-  echo -e "ROOT_DIRECTORY:   ${ROOT_DIRECTORY}"
-  echo -e "SCRIPT_DIRECTORY: ${SCRIPT_DIRECTORY}"
-  echo
-}
-
 function removeNATS() {
-  WARNING_MESSAGE="You are about to remove any existing NATS software from the instance!!"
-  displayWarning
-  displaySkipMessage
+  displayWarning "You are about to remove any existing NATS software from the instance!!"
+  displaySkipMessage Y
   read -r continue
-  if [ "$continue" == "n" ]; then
-    sudo rm -rf $MY_NATS_HOME/*
-    sudo rm $MY_NATS_BIN
-   	sudo rm $MY_NATS_CLI_BIN
-   	sudo rm $MY_NSC_BIN
+  if [[ ( "$restart" == "N" ) || ( "$restart" == "n" ) ]]; then
+    sudo rm -rf $NATS_HOME/*
+    sudo rm $NATS_BIN
+   	sudo rm $NATS_CLI_BIN
+   	sudo rm $NSC_BIN
    	rm -rf "$HOME"/.config/NATS
    	rm -rf "$HOME"/.local/NATS
    	rm -rf "$HOME"/.local/share
    	rm -rf "$HOME"/NATS
    	rm -rf "$HOME"/jwt
-   	rm "$MY_NATS_HOME"/NATS_log_file
+   	rm "$NATS_HOME"/NATS_log_file
   else
     echo "You elected to skip this step"
   fi
+  echo
 }
 
 function restartSystem() {
-  echo " Do you want ${ON_GREEN}RESTART${COLOR_OFF} the system? (y/${ON_GREEN}N${COLOR_OFF})"
-  	read -r restart
-  if [ "$restart" == "y" ]; then
+  displayWarning "You are about to restart the instance!!"
+  displaySkipMessage y
+  read -r restart
+  if [[ ( "$restart" == "N" ) || ( "$restart" == "n" ) ]]; then
   	sudo shutdown -r now
   	exit
+  else
+    echo "You elected to skip this step"
+    echo
   fi
 }
 
 function addNATSExport() {
-  echo
-  echo "==========="
-  echo "==> Appending NATS to the $HOME/.bash_exports"
-  echo
-  if grep -q $MY_NATS_URL "$HOME/.bash_exports"; then
-  	echo "==> NATS exports already exist"
+  echo "Add NATS Exports to $HOME/.bash_exports"
+  if grep -q "${NATS_URL}" "$HOME/.bash_exports"; then
+  	echo " - NATS exports already exist. No action taken."
   else
   	cat >> "$HOME/.bash_exports" <<- EOF
-  		export NATS_URL=$MY_NATS_URL
-  		export NATS_HOME=$MY_NATS_HOME
-  	EOF
+export NATS_URL=$NATS_URL
+export NATS_HOME=$NATS_HOME
+EOF
+    echo "- Appended NATS to the $HOME/.bash_exports"
   fi
+    echo
 }
 
 function installNATSTools() {
-  echo
-  echo "Install NATS server, NATS CLI, and NSC"
-  displaySkipMessage
-  read continue
-  if [ "$continue" == "n" ]; then
-  	sh $HOME/scripts/NATS-install-nats-natscli-nsc.sh
+  echo "Install NATS server, NATS CLI, and NSC at $NATS_HOME"
+  displaySkipMessage n
+  read -r continue
+  if  [[ ( "continue" == "Y" ) || ( "continue" == "y" ) ]]; then
+    echo "You elected to skip this step"
+    echo
+  else
+  	sh "$HOME"/scripts/NATS-install-nats-natscli-nsc.sh "$1" "$2" "$3" "$4"
   fi
 }
 
-function createOperatorAndSystem() {
-  echo
-  echo "Creating NATS operator and SYS"
-  displaySkipMessage
-  echo "                ----"
-  read continue
-  if [ "$continue" == "n" ]; then
-  	sh $HOME/NATS-1.2-create-operator-sys.sh
-  fi
-}
+#function createOperatorAndSystem() {
+#  echo
+#  echo "Creating NATS operator and SYS"
+#  displaySkipMessage Y
+#  echo "                ----"
+#  read continue
+#  if [ "$continue" == "n" ]; then
+#  	sh $HOME/NATS-1.2-create-operator-sys.sh
+#  fi
+#}
 
-function createAccount() {
+#function createAccount() {
   #echo "NEXT: Creating NATS SAVUP account"
   #echo
   #echo " Do you want to SKIP this step? (Y/n)"
@@ -236,10 +220,9 @@ function createAccount() {
   #if [ "$continue" == "n" ]; then
   #	sh $HOME/NATS-1.2.1-create-savup-account.sh
   #fi
+#}
 
-}
-
-function createResolver() {
+#function createResolver() {
   #echo "NEXT: Creating NATS resolver file"
   #echo
   #echo " Do you want to SKIP this step? (Y/n)"
@@ -249,9 +232,9 @@ function createResolver() {
   #	sh $HOME/NATS-1.3-create-resolver-file.sh
   #	sh $HOME/NATS-1.3.1-edit-jwt-dir.sh
   #fi
-}
+#}
 
-function createNATSServerConfig() {
+#function createNATSServerConfig() {
     #echo "NEXT: Creating NATS config file"
     #echo
     #echo " Do you want to SKIP this step? (Y/n)"
@@ -260,9 +243,9 @@ function createNATSServerConfig() {
     #if [ "$continue" == "n" ]; then
     #	sh $HOME/NATS-1.4-create-config-file.sh
     #fi
-}
+#}
 
-function startNATSServer() {
+#function startNATSServer() {
   #echo "==> XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
   #echo "==> XX WARNING - VERY IMPORTANT     XX"
   #echo "==> XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
@@ -286,9 +269,9 @@ function startNATSServer() {
   #		exit
   #	fi
   #fi
-}
+#}
 
-function pushAllAccountsUser() {
+#function pushAllAccountsUser() {
   #echo "NEXT: Pushing NSC account to NATS server"
   #echo
   #echo " Do you want to SKIP this step? (Y/n)"
@@ -297,9 +280,9 @@ function pushAllAccountsUser() {
   #if [ "$continue" == "n" ]; then
   #	sh $HOME/NATS-1.6-push-accounts.sh
   #fi
-}
+#}
 
-function createUser() {
+#function createUser() {
   #echo "NEXT: Creating NATS savup user"
   #echo
   #echo " Do you want to SKIP this step? (Y/n)"
@@ -308,9 +291,9 @@ function createUser() {
   #if [ "$continue" == "n" ]; then
   #	sh $HOME/NATS-1.7-create-savup-user.sh
   #fi
-}
+#}
 
-function createContext() {
+#function createContext() {
   #echo "NEXT: Creating NATS contexts"
   #echo
   #echo " Do you want to SKIP this step? (Y/n)"
@@ -319,9 +302,9 @@ function createContext() {
   #if [ "$continue" == "n" ]; then
   #	sh $HOME/NATS-1.7.1-create-contexts.sh
   #fi
-}
+#}
 
-function cleanUp() {
+#function cleanUp() {
   #echo "NEXT: Clean up and next steps "
   #echo
   #echo " Do you want to SKIP this step? (Y/n)"
@@ -332,6 +315,25 @@ function cleanUp() {
   #	echo
   #	echo "==> Clean up is done"
   #fi
+#}
+
+function print_parameters() {
+  echo "Here are the values you have supplied:"
+  echo -e "NATS_OPERATOR:\t     ${NATS_OPERATOR}"
+  echo -e "NATS_URL:\t     ${NATS_URL}"
+  echo -e "NATS_SERVER_NAME:    ${NATS_SERVER_NAME}"
+  if [ -z "${NATS_WEBSOCKET_PORT}" ]; then
+    echo -e "NATS_WEBSOCKET_PORT: is not being used"
+  else
+    echo -e "NATS_WEBSOCKET_PORT: ${NATS_WEBSOCKET_PORT}"
+  fi
+  echo -e "NATS_USER_ACCOUNT:   ${NATS_USER_ACCOUNT}"
+  echo -e "NATS_USER:\t     ${NATS_USER}"
+  echo
+  echo "Here are the pre-set or defined variables:"
+  echo -e "ROOT_DIRECTORY:   ${ROOT_DIRECTORY}"
+  echo -e "SCRIPT_DIRECTORY: ${SCRIPT_DIRECTORY}"
+  echo
 }
 
 function print_usage() {
@@ -367,12 +369,6 @@ function run_script {
     o)
       set_variable NATS_OPERATOR "$OPTARG"
       ;;
-    a)
-      set_variable NATS_ACCOUNT "$OPTARG"
-      ;;
-    u)
-      set_variable NATS_USER "$OPTARG"
-      ;;
     n)
       set_variable NATS_URL "$OPTARG"
       ;;
@@ -381,6 +377,12 @@ function run_script {
       ;;
     w)
       set_variable NATS_WEBSOCKET_PORT "$OPTARG"
+      ;;
+    a)
+      set_variable NATS_USER_ACCOUNT "$OPTARG"
+      ;;
+    u)
+      set_variable NATS_USER "$OPTARG"
       ;;
     h)
       print_usage
@@ -399,16 +401,18 @@ function run_script {
   removeNATS
   restartSystem
   addNATSExport
-  installNATSTools
-  createOperatorAndSystem
-  createAccount
-  createResolver
-  createNATSServerConfig
-  startNATSServer
-  pushAllAccountsUser
-  createUser
-  createContext
-  cleanUp
+  installNATSTools "$NATS_HOME" "$NATS_BIN" "$NATSCLI_BIN" "$NSC_BIN"
+#  createOperatorAndSystem
+#  createAccount
+#  createResolver
+#  createNATSServerConfig
+#  startNATSServer
+#  pushAllAccountsUser
+#  createUser
+#  createContext
+#  cleanUp
+
+  echo "Done!"
 }
 
 init_script
