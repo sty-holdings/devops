@@ -286,13 +286,14 @@ function run_script {
   restarting_gcloud_instance
 
   echo "Check the following items to see if the installation complete:"
-  echo -e "\tYou can connect to the $(GC_INSTANCE_NAME)"
+  echo -e "\tYou can connect to the ${GC_INSTANCE_NAME}"
   echo -e "\tThe following directories exist:"
-  echo -e "\t\t$(TARGET_DIRECTORY)"
-  echo -e "\t\t$(TARGET_DIRECTORY)/scripts"
+  echo -e "\t\t${TARGET_DIRECTORY}"
+  echo -e "\t\t${TARGET_DIRECTORY}/scripts"
   echo -e "\tThere are files in the scripts directory"
   echo -e "\t/etc/original.fstab exists"
   echo -e "\tYou can enter lsl on the command line and get a list of files."
+  echo -e "To install the NATS server, go to ${TARGET_DIRECTORY}/scripts and run nats-setup.sh"
   echo "Done"
   echo
 }

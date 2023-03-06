@@ -17,10 +17,8 @@ set -eo pipefail
 # shellcheck disable=SC2006
 FILENAME=$(basename "$0")
 # Directory and files
-#ROOT_DIRECTORY=/home/scott_yacko_sty_holdings_com # Production
-ROOT_DIRECTORY=/Users/syacko/workspace/styh-dev/devops # Testing Only
-#SCRIPT_DIRECTORY=${ROOT_DIRECTORY}/scripts  # Production
-SCRIPT_DIRECTORY=${ROOT_DIRECTORY}/shared  # Testing Only
+ROOT_DIRECTORY=/home/scott_yacko_sty_holdings_com # Remote instance
+SCRIPT_DIRECTORY=${ROOT_DIRECTORY}/scripts  # Remote instance
 NATS_OPERATOR=""
 NATS_ACCOUNT=""
 NATS_USER=""
@@ -69,9 +67,7 @@ function displayAlert() {
 }
 
 function displayWarning() {
-  echo -e "${ON_YELLOW} WARNING${COLOR_OFF}"
   echo -e "${ON_YELLOW} WARNING: ${WARNING_MESSAGE}${COLOR_OFF}"
-  echo -e "${ON_YELLOW} WARNING${COLOR_OFF}"
   echo
 }
 
@@ -153,7 +149,11 @@ function print_parameters() {
   echo -e "NATS_USER:\t     ${NATS_USER}"
   echo -e "NATS_URL:\t     ${NATS_URL}"
   echo -e "NATS_SERVER_NAME:    ${NATS_SERVER_NAME}"
+  if [ -z "${NATS_WEBSOCKET_PORT}" ]; then
   echo -e "NATS_WEBSOCKET_PORT: ${NATS_WEBSOCKET_PORT}"
+  else
+  echo -e "NATS_WEBSOCKET_PORT: ${NATS_WEBSOCKET_PORT}"
+  fi-
   echo
   echo "Here are the pre-set or defined variables:"
   echo -e "ROOT_DIRECTORY:   ${ROOT_DIRECTORY}"

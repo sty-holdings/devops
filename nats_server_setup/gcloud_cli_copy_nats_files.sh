@@ -22,6 +22,7 @@ TARGET_DIRECTORY=$4
 
 echo "Copying files to GCloud instance"
 gcloud compute scp --recurse --zone "${GC_REGION}" "${NATS_SOURCE_DIRECTORY}"/NATS* "${GC_REMOTE_LOGIN}:${TARGET_DIRECTORY}"/scripts/.
+gcloud compute scp --recurse --zone "${GC_REGION}" "${NATS_SOURCE_DIRECTORY}"/nats-setup.sh "${GC_REMOTE_LOGIN}:${TARGET_DIRECTORY}"/scripts/.
 echo "Finished copying NATS files to GCloud instance"
 
 exit 0
