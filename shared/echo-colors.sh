@@ -71,3 +71,5 @@ export ON_INTENSE_BLUE='\033[0;104m'    # Blue
 export ON_INTENSE_PURPLE='\033[0;105m'  # Purple
 export ON_INTENSE_CYAN='\033[0;106m'    # Cyan
 export ON_INTENSE_WHITE='\033[0;107m'   # White
+
+
