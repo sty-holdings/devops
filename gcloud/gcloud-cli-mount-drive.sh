@@ -27,8 +27,8 @@ gcloud compute ssh --zone "${GC_REGION}" "${GC_REMOTE_LOGIN}" --command "if [ ! 
 echo "Built tmp fstab file"
 gcloud compute ssh --zone "${GC_REGION}" "${GC_REMOTE_LOGIN}" --command "if [ ! -f \"/etc/original.fstab\" ]; then sudo cp /etc/fstab /etc/original.fstab; sudo cp /tmp/fstab /etc/fstab; fi"
 echo "Replaced original fstab with tmp fstab file"
-gcloud compute ssh --zone "${GC_REGION}" "${GC_REMOTE_LOGIN}" --command "sudo mkdir -p /mnt/disks/nats_home; sudo chown -R ${GC_SERVER_USER} /mnt/disks"
-#gcloud compute ssh --zone "${GC_REGION}" "${GC_REMOTE_LOGIN}" --command "if [ ! -f \"/etc/original.fstab\" ]; then drive=\$(cat /tmp/drive-letter.tmp); sudo mount /dev/\$drive /mnt/disks/nats_home; fi"
+gcloud compute ssh --zone "${GC_REGION}" "${GC_REMOTE_LOGIN}" --command "sudo mkdir -p /mnt/disks/nats_home; sudo chown -R ${GC_SERVER_USER} /mnt/disks/nats_home/.; sudo chown -R ${GC_SERVER_USER} /mnt/disks/nats_home/.*"
+gcloud compute ssh --zone "${GC_REGION}" "${GC_REMOTE_LOGIN}" --command "if [ ! -f \"/etc/original.fstab\" ]; then drive=\$(cat /tmp/drive-letter.tmp); sudo mount /dev/\$drive /mnt/disks/nats_home; fi"
 echo "Created mount point and mounted drive"
 echo "Finished mounting disk on GCloud instance"
 
