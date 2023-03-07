@@ -20,6 +20,12 @@ else
   mkdir -p "$NATS_HOME"/jwt
 fi
 
+if [ -f "$NATS_HOME"/install ]; then
+  echo "   - $NATS_HOME/install already exists. No action taken."
+else
+  mkdir -p "$NATS_HOME"/install
+fi
+
 if grep -q "nats" "/etc/passwd"; then
   echo "   - NATS user already exist. No action taken."
 else
@@ -33,25 +39,25 @@ echo " - Installing NATS server at $NATS_BIN"
 if [ -f "$NATS_BIN" ]; then
 	echo "   - Server has already been installed"
 else
-	curl -L https://github.com/nats-io/nats-server/releases/download/v2.9.8/nats-server-v2.9.15-linux-386.zip -o nats-server-v2.9.15.zip
-	unzip nats-server-v2.9.8.zip -d nats-server
-	sudo cp "$NATS_HOME/nats-server/nats-server-v2.9.8-linux-386/nats-server" $NATS_BIN
+	curl -L https://github.com/nats-io/nats-server/releases/download/v2.9.15/nats-server-v2.9.15-linux-386.zip -o "$NATS_HOME"/install/nats-server-v2.9.15.zip
+	unzip "$NATS_HOME"/install/nats-server-v2.9.15.zip -d "$NATS_HOME"/install/.
+	sudo cp "$NATS_HOME"/install/nats-server-v2.9.15-linux-386/nats-server "$NATS_BIN"
 fi
 
 echo " - Installing NATSCLI server at $NATSCLI_BIN"
 if [ -f "$NATSCLI_BIN" ]; then
 	echo "   - NATSCLI has already been installed"
 else
-	curl -L https://github.com/nats-io/natscli/releases/download/v0.0.35/nats-0.0.35-linux-386.zip -o nats-cli-v0.0.35.zip
-	unzip nats-cli-v0.0.35.zip -d nats-cli
-	sudo cp "$NATS_HOME/nats-cli/nats-0.0.35-linux-386/nats" "$NATSCLI_BIN"
+	curl -L https://github.com/nats-io/natscli/releases/download/v0.0.35/nats-0.0.35-linux-amd64.zip -o "$NATS_HOME"/install/nats-cli-v0.0.35.zip
+	unzip "$NATS_HOME"/install/nats-cli-v0.0.35.zip -d "$NATS_HOME"/install/.
+	sudo cp "$NATS_HOME"/install/nats-0.0.35-linux-amd64/nats "$NATSCLI_BIN"
 fi
 
 echo " - Installing NSC server at $NSC_BIN"
 if [ -f "$NSC_BIN" ]; then
 	echo "   - NSC has already been installed"
 else
-	curl -L https://github.com/nats-io/nsc/releases/download/2.7.8/nsc-linux-386.zip -o nsc.7.8.zip
-	unzip nsc.7.4.zip -d nsc
-	sudo cp "$NATS_HOME/nsc/nsc" $NSC_BIN
+	curl -L https://github.com/nats-io/nsc/releases/download/v2.7.8/nsc-linux-386.zip -o "$NATS_HOME"/install/nats-cli-v0.0.35.zip
+	unzip "$NATS_HOME"/install/nats-cli-v0.0.35.zip -d "$NATS_HOME"/install/.
+	sudo cp "$NATS_HOME"/install/nsc "$NSC_BIN"
 fi

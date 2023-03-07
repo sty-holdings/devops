@@ -7,10 +7,18 @@
 # Installation:
 #   None required
 #
+# Required IAM Roles:
+#  - Compute Admin
+#  - Compute Network Admin
+#  - Compute Organization Resource Admin
+#  - Compute OS Admin Login
+#  - Owner
+#  - Tech Support Editor
+#
 # Copyright (c) 2022 STY-Holdings Inc
 # All Rights Reserved
 #
-
+# shellcheck disable=SC2028
 set -eo pipefail
 
 # script variables
@@ -44,14 +52,12 @@ function build_remote_instance_login() {
 }
 
 function copying_file_gcloud_instance() {
-  print_failure_note "copy file and setting permission"
   sh ${GCLOUD_ROOT_DIRECTORY}/gcloud-cli-copy-supporting-files.sh "$1" "$2" "$3" "$5"
   sh ${NATS_ROOT_DIRECTORY}/gcloud_cli_copy_nats_files.sh "$1" "$2" "$4" "$5"
   echo
 }
 
 function creating_gcloud_directories() {
-  print_failure_note "directory"
   sh ${GCLOUD_ROOT_DIRECTORY}/gcloud-cli-create-directories.sh "$1" "$2" "$3"
   echo
 }
@@ -65,26 +71,8 @@ function creating_gcloud_firewall_rules() {
 function creating_gcloud_instance() {
   print_failure_note "instance"
   sh ${GCLOUD_ROOT_DIRECTORY}/gcloud-cli-create-instance.sh "$1" "$2" "$3" "$4" "$5" "$6"
-  echo -e "${ON_YELLOW}The script is going to pause for 30 seconds to allow time for the instance to spin up.${COLOR_OFF}"
+  echo "${BLACK}${ON_YELLOW}The script is going to pause for 30 seconds to allow time for the instance to spin up.${COLOR_OFF}"
   sleep 30
-}
-
-function mount_nats_drive() {
-  sh ${GCLOUD_ROOT_DIRECTORY}/gcloud-cli-mount-drive.sh "$1" "$2" "$3"
-  echo
-}
-
-function display_alert() {
-  echo "**********************************"
-  echo
-  echo "  AA   L      EEEEEE RRRR   TTTTT"
-  echo " A  A  L      E      R   R    T  "
-  echo " AAAA  L      EEEE   RRRR     T  "
-  echo "A    A L      E      R   R    T  "
-  echo "A    A LLLLLL EEEEEE R    R   T  "
-  echo
-  echo "**********************************"
-  echo
 }
 
 function display_savup() {
@@ -95,12 +83,6 @@ function display_savup() {
   echo "      S  A    A   V  V   U   U  P     "
   echo "  SSSS   A    A    VV     UUU   P     "
   echo "======================================"
-  echo
-}
-
-function display_step_spacer() {
-  echo -e "${ON_GREEN}--------------------------${COLOR_OFF}"
-  echo
 }
 
 function executing_gcloud_base_configuration() {
@@ -109,12 +91,21 @@ function executing_gcloud_base_configuration() {
   echo "Base configuration has been applied to the GCloud instance"
 }
 
+function get_service_account_number() {
+
+}
+
 function init_script() {
   . "${SHARED_DIRECTORY}"/echo-colors.sh
 }
 
+function mount_nats_drive() {
+  sh ${GCLOUD_ROOT_DIRECTORY}/gcloud-cli-mount-drive.sh "$1" "$2" "$3"
+  echo
+}
+
 function print_error() {
-  echo -e "${ON_RED}$1${COLOR_OFF}"
+  echo "${ON_RED}$1${COLOR_OFF}"
 }
 
 function print_failure_note() {
@@ -123,32 +114,50 @@ function print_failure_note() {
 
 function print_parameters() {
   echo "Here are the values you have supplied:"
-  echo -e "Target Environment:\t${TARGET_ENVIRONMENT}"
-  echo -e "GC_PROJECT_ID=\t\t${GC_PROJECT_ID}"
-  echo -e "\t\t\tmust match the target environment. Env of dev should have the dev project id."
-  echo -e "GC_SERVICE_ACCOUNT=\t${GC_SERVICE_ACCOUNT}"
-  echo -e "\t\t\tmust match the target environment. Env of dev should have the dev service account."
-  echo -e "GC_INSTANCE_NUMBER=\t${GC_INSTANCE_NUMBER}"
-  echo -e "GC_INSTANCE_ADDRESS=\t${GC_INSTANCE_ADDRESS}"
-  echo -e "GC_FIREWALL_TAGS=\t${GC_FIREWALL_TAGS}"
+  echo "Target Environment:\t${TARGET_ENVIRONMENT}"
+  echo "GC_PROJECT_ID=\t\t${GC_PROJECT_ID}"
+  echo "\t\t\tmust match the target environment. Env of dev should have the dev project id."
+  echo "GC_SERVICE_ACCOUNT=\t${GC_SERVICE_ACCOUNT}"
+  echo "\t\t\tmust match the target environment. Env of dev should have the dev service account."
+  echo "GC_INSTANCE_NUMBER=\t${GC_INSTANCE_NUMBER}"
+  echo "GC_INSTANCE_ADDRESS=\t${GC_INSTANCE_ADDRESS}"
+  echo "GC_FIREWALL_TAGS=\t${GC_FIREWALL_TAGS}"
   echo
   echo "Here are the pre-set or defined variables:"
-  echo -e "ROOT_DIRECTORY= \t${ROOT_DIRECTORY}"
-  echo -e "GCLOUD_ROOT_DIRECTORY=\t${ROOT_DIRECTORY}/gcloud"
-  echo -e "NATS_ROOT_DIRECTORY=\t${ROOT_DIRECTORY}/nats_server_setup"
-  echo -e "SHARED_DIRECTORY=\t${ROOT_DIRECTORY}/shared"
-  echo -e "TARGET_DIRECTORY=\t${TARGET_DIRECTORY}"
-  echo -e "GC_SERVER_USER= \t${GC_SERVER_USER}"
-  echo -e "GC_REGION=      \t${GC_REGION}"
-  echo -e "GC_INSTANCE_NAME=\t${GC_INSTANCE_NAME}"
-  echo -e "GC_REMOTE_LOGIN=\t${GC_REMOTE_LOGIN}"
+  echo "ROOT_DIRECTORY= \t${ROOT_DIRECTORY}"
+  echo "GCLOUD_ROOT_DIRECTORY=\t${ROOT_DIRECTORY}/gcloud"
+  echo "NATS_ROOT_DIRECTORY=\t${ROOT_DIRECTORY}/nats_server_setup"
+  echo "SHARED_DIRECTORY=\t${ROOT_DIRECTORY}/shared"
+  echo "TARGET_DIRECTORY=\t${TARGET_DIRECTORY}"
+  echo "GC_SERVER_USER= \t${GC_SERVER_USER}"
+  echo "GC_REGION=      \t${GC_REGION}"
+  echo "GC_INSTANCE_NAME=\t${GC_INSTANCE_NAME}"
+  echo "GC_REMOTE_LOGIN=\t${GC_REMOTE_LOGIN}"
+  echo
+}
+
+function print_usage() {
+  echo
+  echo "This will create an instance on GCloud."
+  echo
+  echo "Usage: ${FILENAME} -h, -d | -p, -a {argument}, -f {argument}, -n {argument}, -g {Google project id}, -s {Google service account}"
+  echo
+  echo "flags:"
+  echo "-h\t\t\t display help"
+  echo "-d\t\t\t Install a gcloud development instance. (-d | -p Must be first flag provided."
+  echo "-p\t\t\t Install a gcloud production instance. (-d | -p Must be first flag provided."
+  echo "-a {IPV4 address}\t The IPV4 address for the instance. To have an IP address assigned, use 0.0.0.0"
+  echo "-n {number}\t\t The unique number that identifies the instance."
+  echo "-f {tag,...}\t\t Which firewall tags that should be applied to this instance."
+  echo "-g {project id}\t\t The project id that matches the environment. Project Id for dev vs the project id for production."
+  echo "\t\t\t clicking on Computer Engine default service account. You want the number at the beginning of the email."
   echo
 }
 
 function restarting_gcloud_instance() {
   # Restarting the GCloud Instance
   gcloud compute ssh --zone "${GC_REGION}" "${GC_REMOTE_LOGIN}" --command "sudo shutdown -r now"
-  echo -e "${ON_YELLOW}The script is going to pause for 1 minute to allow time for the instance to spin up after the reboot.${COLOR_OFF}"
+  echo "${BLACK}${ON_YELLOW}The script is going to pause for 1 minute to allow time for the instance to spin up after the reboot.${COLOR_OFF}"
   sleep 60
 }
 
@@ -183,34 +192,11 @@ function validate_parameters() {
     local Failed="true"
     print_error "ERROR: The Google project id parameter is missing"
   fi
-  if [ -z "$GC_SERVICE_ACCOUNT_CHECKED" ]; then
-    local Failed="true"
-    print_error "ERROR: The Google service account parameter is missing"
-  fi
 
   if [ "$Failed" == "true" ]; then
     print_usage
     exit 1
   fi
-}
-
-function print_usage() {
-  echo
-  echo "This will create an instance on GCloud."
-  echo
-  echo "Usage: ${FILENAME} -h, -d | -p, -a {argument}, -f {argument}, -n {argument}, -g {Google project id}, -s {Google service account}"
-  echo
-  echo "flags:"
-  echo -e "  -h\t\t\t display help"
-  echo -e "  -d\t\t\t Install a gcloud development instance. (-d | -p Must be first flag provided."
-  echo -e "  -p\t\t\t Install a gcloud production instance. (-d | -p Must be first flag provided."
-  echo -e "  -a {IPV4 address}\t The IPV4 address for the instance. To have an IP address assigned, use 0.0.0.0"
-  echo -e "  -n {number}\t\t The unique number that identifies the instance."
-  echo -e "  -f {tag,...}\t\t Which firewall tags that should be applied to this instance."
-  echo -e "  -g {project id}\t The project id that matches the environment. Project Id for dev vs the project id for production."
-  echo -e "  -s {service account}\t The service account for the Project Id. This can be found in IAM & Admin > Service Accounts by"
-  echo -e "\t\t\t clicking on Computer Engine default service account. You want the number at the beginning of the email."
-  echo
 }
 
 # Main function of this script
@@ -242,9 +228,7 @@ function run_script {
       ;;
     g)
       set_variable GC_PROJECT_ID "$OPTARG"
-      ;;
-    s)
-      set_variable GC_SERVICE_ACCOUNT "$OPTARG"
+      get_service_account_number
       ;;
     h)
       print_usage
@@ -258,7 +242,7 @@ function run_script {
       SHORT_TARGET_ENVIRONMENT="prod"
       ;;
     *)
-      print_error "ERROR: The parameters are -h, -d | -p, -a {argument}, -f {argument}, -n {argument}, -g {Google project id}, -s {Google service account}" >&2
+      print_error "ERROR: Please review the usage below:" >&2
       print_usage
       exit 1
       ;;
@@ -286,14 +270,14 @@ function run_script {
   restarting_gcloud_instance
 
   echo "Check the following items to see if the installation complete:"
-  echo -e "\tYou can connect to the ${GC_INSTANCE_NAME}"
-  echo -e "\tThe following directories exist:"
-  echo -e "\t\t${TARGET_DIRECTORY}"
-  echo -e "\t\t${TARGET_DIRECTORY}/scripts"
-  echo -e "\tThere are files in the scripts directory"
-  echo -e "\t/etc/original.fstab exists"
-  echo -e "\tYou can enter lsl on the command line and get a list of files."
-  echo -e "To install the NATS server, go to ${TARGET_DIRECTORY}/scripts and run nats-setup.sh"
+  echo "\tYou can connect to the ${GC_INSTANCE_NAME}"
+  echo "\tThe following directories exist:"
+  echo "\t\t${TARGET_DIRECTORY}"
+  echo "\t\t${TARGET_DIRECTORY}/scripts"
+  echo "\tThere are files in the scripts directory"
+  echo "\t/etc/original.fstab exists"
+  echo "\tYou can enter lsl on the command line and get a list of files."
+  echo "To install the NATS server, go to ${TARGET_DIRECTORY}/scripts and run nats-setup.sh"
   echo "Done"
   echo
 }

@@ -26,6 +26,7 @@ NATS_URL=""
 NATS_SERVER_NAME=""
 NATS_WEBSOCKET_PORT=""
 # Internal Variables
+NKEYS_PATH=~/.local/share/nats/nsc/keys
 NATS_BIN=/usr/bin/nats-server
 NATSCLI_BIN=/usr/bin/nats
 NSC_BIN=/usr/bin/nsc
@@ -140,27 +141,6 @@ function validate_parameters() {
   fi
 }
 
-function removeNATS() {
-  displayWarning "You are about to remove any existing NATS software from the instance!!"
-  displaySkipMessage Y
-  read -r continue
-  if [[ ( "$restart" == "N" ) || ( "$restart" == "n" ) ]]; then
-    sudo rm -rf $NATS_HOME/*
-    sudo rm $NATS_BIN
-   	sudo rm $NATS_CLI_BIN
-   	sudo rm $NSC_BIN
-   	rm -rf "$HOME"/.config/NATS
-   	rm -rf "$HOME"/.local/NATS
-   	rm -rf "$HOME"/.local/share
-   	rm -rf "$HOME"/NATS
-   	rm -rf "$HOME"/jwt
-   	rm "$NATS_HOME"/NATS_log_file
-  else
-    echo "You elected to skip this step"
-  fi
-  echo
-}
-
 function restartSystem() {
   displayWarning "You are about to restart the instance!!"
   displaySkipMessage y
@@ -172,6 +152,25 @@ function restartSystem() {
     echo "You elected to skip this step"
     echo
   fi
+}
+
+function removeNATS() {
+  displayWarning "You are about to remove any existing NATS software from the instance!!"
+  displaySkipMessage Y
+  read -r continue
+  if [[ ( "$continue" == "N" ) || ( "$continue" == "n" ) ]]; then
+    sudo rm -rf "$NATS_HOME"/*
+    sudo rm -rf "$NATS_HOME"/.keys
+    sudo rm "$NATS_BIN"
+   	sudo rm "$NATSCLI_BIN"
+   	sudo rm "$NSC_BIN"
+   	rm -rf "$HOME"/.config/NATS
+   	rm -rf "$HOME"/.local/NATS
+   	rm -rf "$HOME"/.local/share/nats
+  else
+    echo "You elected to skip this step"
+  fi
+  echo
 }
 
 function addNATSExport() {
@@ -192,150 +191,154 @@ function installNATSTools() {
   echo "Install NATS server, NATS CLI, and NSC at $NATS_HOME"
   displaySkipMessage n
   read -r continue
-  if  [[ ( "continue" == "Y" ) || ( "continue" == "y" ) ]]; then
+  if  [[ ( "$continue" == "Y" ) || ( "$continue" == "y" ) ]]; then
     echo "You elected to skip this step"
     echo
   else
   	sh "$HOME"/scripts/NATS-install-nats-natscli-nsc.sh "$1" "$2" "$3" "$4"
   fi
+  echo
 }
 
-#function createOperatorAndSystem() {
-#  echo
-#  echo "Creating NATS operator and SYS"
-#  displaySkipMessage Y
-#  echo "                ----"
-#  read continue
-#  if [ "$continue" == "n" ]; then
-#  	sh $HOME/NATS-1.2-create-operator-sys.sh
-#  fi
-#}
+function createOperatorAndSystem() {
+  echo "Creating NATS operator and SYS at ${NATS_URL}"
+  displaySkipMessage N
+  read -r continue
+  if  [[ ( "$continue" == "Y" ) || ( "$continue" == "y" ) ]]; then
+    echo "You elected to skip this step"
+    echo
+  else
+  	sh "$HOME"/scripts/NATS-create-operator-sys.sh $1 $2 $3 $4
+  fi
+}
 
-#function createAccount() {
-  #echo "NEXT: Creating NATS SAVUP account"
-  #echo
-  #echo " Do you want to SKIP this step? (Y/n)"
-  #echo "                ----"
-  #read continue
-  #if [ "$continue" == "n" ]; then
-  #	sh $HOME/NATS-1.2.1-create-savup-account.sh
-  #fi
-#}
+function createAccount() {
+  echo "NEXT: Creating NATS SAVUP account"
+  echo
+  echo " Do you want to SKIP this step? (Y/n)"
+  echo "                ----"
+  read continue
+  if [ "$continue" == "n" ]; then
+  	sh $HOME/NATS-1.2.1-create-savup-account.sh
+  fi
+}
 
-#function createResolver() {
-  #echo "NEXT: Creating NATS resolver file"
-  #echo
-  #echo " Do you want to SKIP this step? (Y/n)"
-  #echo "                ----"
-  #read continue
-  #if [ "$continue" == "n" ]; then
-  #	sh $HOME/NATS-1.3-create-resolver-file.sh
-  #	sh $HOME/NATS-1.3.1-edit-jwt-dir.sh
-  #fi
-#}
+function createResolver() {
+  echo "NEXT: Creating NATS resolver file"
+  echo
+  echo " Do you want to SKIP this step? (Y/n)"
+  echo "                ----"
+  read continue
+  if [ "$continue" == "n" ]; then
+  	sh $HOME/NATS-1.3-create-resolver-file.sh
+  	sh $HOME/NATS-1.3.1-edit-jwt-dir.sh
+  fi
+}
 
-#function createNATSServerConfig() {
-    #echo "NEXT: Creating NATS config file"
-    #echo
-    #echo " Do you want to SKIP this step? (Y/n)"
-    #echo "                ----"
-    #read continue
-    #if [ "$continue" == "n" ]; then
-    #	sh $HOME/NATS-1.4-create-config-file.sh
-    #fi
-#}
+function createNATSServerConfig() {
+    echo "NEXT: Creating NATS config file"
+    echo
+    echo " Do you want to SKIP this step? (Y/n)"
+    echo "                ----"
+    read continue
+    if [ "$continue" == "n" ]; then
+    	sh $HOME/NATS-1.4-create-config-file.sh
+    fi
+}
 
-#function startNATSServer() {
-  #echo "==> XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
-  #echo "==> XX WARNING - VERY IMPORTANT     XX"
-  #echo "==> XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
-  #echo
-  #echo "==> You are about to start the NATS server in background mode"
-  #echo "==>"
-  #echo "==>"
-  #echo " Do you want to SKIP this step? (Y/n)"
-  #echo "                ----"
-  #read continue
-  #if [ "$continue" == "n" ]; then
-  #	sh $HOME/NATS-1.5-start-server.sh &
-  #	sleep 2
-  #	sudo ps aux | grep nats-server | awk '/nats.conf/' > /tmp/natsAUX.tmp
-  #	NATS_PID=$(sudo cat /tmp/natsAUX.tmp | awk '//{print $2}')
-  #	if [[ -z "$NATS_PID" ]]; then
-  #		echo "ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ"
-  #		echo "ZZ      SERVER DID NOT START        ZZ"
-  #		echo "ZZ           EXISTING               ZZ"
-  #		echo "ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ"
-  #		exit
-  #	fi
-  #fi
-#}
+function startNATSServer() {
+  echo "==> XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+  echo "==> XX WARNING - VERY IMPORTANT     XX"
+  echo "==> XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+  echo
+  echo "==> You are about to start the NATS server in background mode"
+  echo "==>"
+  echo "==>"
+  echo " Do you want to SKIP this step? (Y/n)"
+  echo "                ----"
+  read continue
+  if [ "$continue" == "n" ]; then
+  	sh $HOME/NATS-1.5-start-server.sh &
+  	sleep 2
+  	sudo ps aux | grep nats-server | awk '/nats.conf/' > /tmp/natsAUX.tmp
+  	NATS_PID=$(sudo cat /tmp/natsAUX.tmp | awk '//{print $2}')
+  	if [[ -z "$NATS_PID" ]]; then
+  		echo "ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ"
+  		echo "ZZ      SERVER DID NOT START        ZZ"
+  		echo "ZZ           EXISTING               ZZ"
+  		echo "ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ"
+  		exit
+  	fi
+  fi
+}
 
-#function pushAllAccountsUser() {
-  #echo "NEXT: Pushing NSC account to NATS server"
-  #echo
-  #echo " Do you want to SKIP this step? (Y/n)"
-  #echo "                ----"
-  #read continue
-  #if [ "$continue" == "n" ]; then
-  #	sh $HOME/NATS-1.6-push-accounts.sh
-  #fi
-#}
+function pushAllAccountsUser() {
+  echo "NEXT: Pushing NSC account to NATS server"
+  echo
+  echo " Do you want to SKIP this step? (Y/n)"
+  echo "                ----"
+  read continue
+  if [ "$continue" == "n" ]; then
+  	sh $HOME/NATS-1.6-push-accounts.sh
+  fi
+}
 
-#function createUser() {
-  #echo "NEXT: Creating NATS savup user"
-  #echo
-  #echo " Do you want to SKIP this step? (Y/n)"
-  #echo "                ----"
-  #read continue
-  #if [ "$continue" == "n" ]; then
-  #	sh $HOME/NATS-1.7-create-savup-user.sh
-  #fi
-#}
+function createUser() {
+  echo "NEXT: Creating NATS savup user"
+  echo
+  echo " Do you want to SKIP this step? (Y/n)"
+  echo "                ----"
+  read continue
+  if [ "$continue" == "n" ]; then
+  	sh $HOME/NATS-1.7-create-savup-user.sh
+  fi
+}
 
-#function createContext() {
-  #echo "NEXT: Creating NATS contexts"
-  #echo
-  #echo " Do you want to SKIP this step? (Y/n)"
-  #echo "                ----"
-  #read continue
-  #if [ "$continue" == "n" ]; then
-  #	sh $HOME/NATS-1.7.1-create-contexts.sh
-  #fi
-#}
+function createContext() {
+  echo "NEXT: Creating NATS contexts"
+  echo
+  echo " Do you want to SKIP this step? (Y/n)"
+  echo "                ----"
+  read continue
+  if [ "$continue" == "n" ]; then
+  	sh $HOME/NATS-1.7.1-create-contexts.sh
+  fi
+}
 
-#function cleanUp() {
-  #echo "NEXT: Clean up and next steps "
-  #echo
-  #echo " Do you want to SKIP this step? (Y/n)"
-  #echo "                ----"
-  #read continue
-  #if [ "$continue" == "n" ]; then
-  #	sh $HOME/NATS-1.9-cleanup.sh
-  #	echo
-  #	echo "==> Clean up is done"
-  #fi
-#}
+function cleanUp() {
+  echo "NEXT: Clean up and next steps "
+  echo
+  echo " Do you want to SKIP this step? (Y/n)"
+  echo "                ----"
+  read continue
+  if [ "$continue" == "n" ]; then
+  	sh $HOME/NATS-1.9-cleanup.sh
+  	echo
+  	echo "==> Clean up is done"
+  fi
+}
 
+# shellcheck disable=SC2028
 function print_parameters() {
   echo "Here are the values you have supplied:"
-  echo -e "NATS_OPERATOR:\t     ${NATS_OPERATOR}"
-  echo -e "NATS_URL:\t     ${NATS_URL}"
-  echo -e "NATS_SERVER_NAME:    ${NATS_SERVER_NAME}"
+  echo "NATS_OPERATOR:\t     ${NATS_OPERATOR}"
+  echo "NATS_URL:\t     ${NATS_URL}"
+  echo "NATS_SERVER_NAME:    ${NATS_SERVER_NAME}"
   if [ -z "${NATS_WEBSOCKET_PORT}" ]; then
-    echo -e "NATS_WEBSOCKET_PORT: is not being used"
+    echo "NATS_WEBSOCKET_PORT: is not being used"
   else
-    echo -e "NATS_WEBSOCKET_PORT: ${NATS_WEBSOCKET_PORT}"
+    echo "NATS_WEBSOCKET_PORT: ${NATS_WEBSOCKET_PORT}"
   fi
-  echo -e "NATS_USER_ACCOUNT:   ${NATS_USER_ACCOUNT}"
-  echo -e "NATS_USER:\t     ${NATS_USER}"
+  echo "NATS_USER_ACCOUNT:   ${NATS_USER_ACCOUNT}"
+  echo "NATS_USER:\t     ${NATS_USER}"
   echo
   echo "Here are the pre-set or defined variables:"
-  echo -e "ROOT_DIRECTORY:   ${ROOT_DIRECTORY}"
-  echo -e "SCRIPT_DIRECTORY: ${SCRIPT_DIRECTORY}"
+  echo "ROOT_DIRECTORY:   ${ROOT_DIRECTORY}"
+  echo "SCRIPT_DIRECTORY: ${SCRIPT_DIRECTORY}"
   echo
 }
 
+# shellcheck disable=SC2028
 function print_usage() {
   echo
   echo "This will create an instance on GCloud."
@@ -343,13 +346,13 @@ function print_usage() {
   echo "Usage: ${FILENAME} -h | -o {operator name} -a {account name} -u {user name} -n {url} -s {server name} -w {port number}"
   echo
   echo "flags:"
-  echo -e "  -h\t\t\t display help"
-  echo -e "  -o {operator name}\t The name of the operator."
-  echo -e "  -a {account name}\t The name of the starter account."
-  echo -e "  -u {user name}\t The name of the starter user."
-  echo -e "  -n {url}\t\t The URL for the server. This has to be set up in DNS or the host file."
-  echo -e "  -s {server name}\t The instance name of the server."
-  echo -e "  -w {port number}\t Optional - Websocket port number. Recommended to use 9222"
+  echo "  -h\t\t\t display help"
+  echo "  -o {operator name}\t The name of the operator."
+  echo "  -a {account name}\t The name of the starter account."
+  echo "  -u {user name}\t The name of the starter user."
+  echo "  -n {url}\t\t The URL for the server. This has to be set up in DNS or the host file."
+  echo "  -s {server name}\t The instance name of the server."
+  echo "  -w {port number}\t Optional - Websocket port number. Recommended to use 9222"
   echo
 }
 
@@ -402,7 +405,7 @@ function run_script {
   restartSystem
   addNATSExport
   installNATSTools "$NATS_HOME" "$NATS_BIN" "$NATSCLI_BIN" "$NSC_BIN"
-#  createOperatorAndSystem
+  createOperatorAndSystem "$NATS_OPERATOR" "$NATS_HOME" "$NATS_URL" "$NKEYS_PATH"
 #  createAccount
 #  createResolver
 #  createNATSServerConfig
