@@ -26,7 +26,8 @@ else
   mkdir -p "$NATS_HOME"/install
 fi
 
-if grep -q "nats" "/etc/passwd"; then
+b=$(awk -F : ' $1=="nats" ' < /etc/passwd)
+if [ -n "$b" ]; then
   echo "   - NATS user already exist. No action taken."
 else
   sudo useradd --home /mnt/disks/nats_home/ -M -s /bin/false -g nats -G google-sudoers nats
