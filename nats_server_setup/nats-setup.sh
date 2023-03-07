@@ -10,7 +10,7 @@
 # Copyright (c) 2022 STY-Holdings Inc
 # All Rights Reserved
 #
-
+# shellcheck disable=SC2028
 set -eo pipefail
 
 # script variables
@@ -36,11 +36,11 @@ NATS_CONF=nats.conf
 NATS_PID=nats.pid
 NATS_PID_RUNNING=nats.pid.running
 
-function init_script() {
+function initScript() {
   . "${SCRIPT_DIRECTORY}"/echo-colors.sh
 }
 
-function display_savup() {
+function displaySavup() {
   echo "  ======================================"
   echo "     SSSS    AA    V    V  U   U  PPPP  "
   echo "    S       A  A   V    V  U   U  P   P "
@@ -194,30 +194,32 @@ function createOperatorAndSystem() {
     echo "You elected to skip this step"
     echo
   else
-  	sh "$HOME"/scripts/NATS-create-operator-sys.sh "$1" "$2" "$3" "$4"
+  	sh "$HOME"/scripts/NATS-create-operator-sys.sh "$1" "$2" "$3" "$4" "$5"
   fi
 }
 
 function createAccount() {
-  echo "NEXT: Creating NATS SAVUP account"
-  echo
-  echo " Do you want to SKIP this step? (Y/n)"
-  echo "                ----"
-  read continue
-  if [ "$continue" == "n" ]; then
-  	sh $HOME/NATS-1.2.1-create-savup-account.sh
+  echo "Creating NATS SAVUP account"
+  displaySkipMessage N
+  read -r continue
+  if  [[ ( "$continue" == "Y" ) || ( "$continue" == "y" ) ]]; then
+    echo "You elected to skip this step"
+    echo
+  else
+  	sh "$HOME"/scripts/NATS-create-account.sh "$1" "$2"
   fi
 }
 
 function createResolver() {
-  echo "NEXT: Creating NATS resolver file"
-  echo
-  echo " Do you want to SKIP this step? (Y/n)"
-  echo "                ----"
-  read continue
-  if [ "$continue" == "n" ]; then
-  	sh $HOME/NATS-1.3-create-resolver-file.sh
-  	sh $HOME/NATS-1.3.1-edit-jwt-dir.sh
+  echo "Creating NATS resolver file"
+  displaySkipMessage N
+  read -r continue
+  if  [[ ( "$continue" == "Y" ) || ( "$continue" == "y" ) ]]; then
+    echo "You elected to skip this step"
+    echo
+  else
+  	sh "$HOME"/scripts/NATS-create-resolver-file.sh "$1" "$2" "$3"
+#  	sh "$HOME"/scripts/NATS-edit-jwt-dir.sh "$1" "$2"
   fi
 }
 
@@ -307,8 +309,8 @@ function cleanUp() {
 # shellcheck disable=SC2028
 function print_parameters() {
   echo "Here are the values you have supplied:"
-  echo "NATS_OPERATOR:\t     ${NATS_OPERATOR}"
-  echo "NATS_URL:\t     ${NATS_URL}"
+  echo -e "NATS_OPERATOR:\t     ${NATS_OPERATOR}"
+  echo -e "NATS_URL:\t     ${NATS_URL}"
   echo "NATS_SERVER_NAME:    ${NATS_SERVER_NAME}"
   if [ -z "${NATS_WEBSOCKET_PORT}" ]; then
     echo "NATS_WEBSOCKET_PORT: is not being used"
@@ -316,7 +318,7 @@ function print_parameters() {
     echo "NATS_WEBSOCKET_PORT: ${NATS_WEBSOCKET_PORT}"
   fi
   echo "NATS_USER_ACCOUNT:   ${NATS_USER_ACCOUNT}"
-  echo "NATS_USER:\t     ${NATS_USER}"
+  echo -e "NATS_USER:\t     ${NATS_USER}"
   echo
   echo "Here are the pre-set or defined variables:"
   echo "ROOT_DIRECTORY:   ${ROOT_DIRECTORY}"
@@ -343,14 +345,14 @@ function print_usage() {
 }
 
 # Main function of this script
-function run_script {
+function runScript {
   if [ "$#" == "0" ]; then
     print_error "ERROR: No parameters where provided."
     print_usage
     exit 1
   fi
 
-  display_savup
+  displaySavup
   isNATSAlreadyRunning
 
   while getopts 'o:a:u:n:s:w:h' OPT; do # see print_usage
@@ -391,9 +393,9 @@ function run_script {
   restartSystem
   addNATSExport
   installNATSTools "$NATS_HOME" "$NATS_BIN" "$NATSCLI_BIN" "$NSC_BIN"
-  createOperatorAndSystem "$NATS_OPERATOR" "$NATS_HOME" "$NATS_URL" "$NKEYS_PATH"
-#  createAccount
-#  createResolver
+  createOperatorAndSystem "$NATS_OPERATOR" "$NATS_HOME" "$NATS_URL" "$NKEYS_PATH" "$SCRIPT_DIRECTORY"
+  createAccount "$NATS_USER_ACCOUNT" "$SCRIPT_DIRECTORY"
+  createResolver "$NATS_HOME" "$NATS_RESOLVER" "$SCRIPT_DIRECTORY"
 #  createNATSServerConfig
 #  startNATSServer
 #  pushAllAccountsUser
@@ -410,5 +412,5 @@ function run_script {
   echo "Done!"
 }
 
-init_script
-run_script "$@"
+initScript
+runScript "$@"
