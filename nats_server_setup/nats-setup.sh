@@ -52,20 +52,6 @@ function display_savup() {
   echo " NATS SERVER installation and configuration"
 }
 
-function displayAlert() {
-	echo
-	echo "**********************************"
-	echo 
-	echo "  AA   L      EEEEEE RRRR   TTTTT"
-	echo " A  A  L      E      R   R    T  "
-	echo " AAAA  L      EEEE   RRRR     T  "
-	echo "A    A L      E      R   R    T  "
-	echo "A    A LLLLLL EEEEEE R    R   T  "
-	echo 
-	echo "**********************************"
-	echo
-}
-
 function displayWarning() {
   echo -e "${BLACK}${ON_YELLOW}WARNING: $1${COLOR_OFF}"
 }
@@ -208,7 +194,7 @@ function createOperatorAndSystem() {
     echo "You elected to skip this step"
     echo
   else
-  	sh "$HOME"/scripts/NATS-create-operator-sys.sh $1 $2 $3 $4
+  	sh "$HOME"/scripts/NATS-create-operator-sys.sh "$1" "$2" "$3" "$4"
   fi
 }
 
@@ -343,16 +329,16 @@ function print_usage() {
   echo
   echo "This will create an instance on GCloud."
   echo
-  echo "Usage: ${FILENAME} -h | -o {operator name} -a {account name} -u {user name} -n {url} -s {server name} -w {port number}"
+  echo "Usage: ${FILENAME} -h | -o {operator name} -a {account name} -n {user name} -u {url} -s {server name} -p {port number}"
   echo
   echo "flags:"
-  echo "  -h\t\t\t display help"
-  echo "  -o {operator name}\t The name of the operator."
-  echo "  -a {account name}\t The name of the starter account."
-  echo "  -u {user name}\t The name of the starter user."
-  echo "  -n {url}\t\t The URL for the server. This has to be set up in DNS or the host file."
-  echo "  -s {server name}\t The instance name of the server."
-  echo "  -w {port number}\t Optional - Websocket port number. Recommended to use 9222"
+  echo -e "  -h\t\t\t display help"
+  echo -e "  -o {operator name}\t The name of the operator."
+  echo -e "  -a {account name}\t The name of the starter account."
+  echo -e "  -n {user name}\t The name of the starter user."
+  echo -e "  -u {url}\t\t The URL for the server. This has to be set up in DNS or the host file."
+  echo -e "  -s {server name}\t The instance name of the server."
+  echo -e "  -p {port number}\t Optional - Websocket port number. Recommended to use 9222"
   echo
 }
 
@@ -373,19 +359,19 @@ function run_script {
       set_variable NATS_OPERATOR "$OPTARG"
       ;;
     n)
-      set_variable NATS_URL "$OPTARG"
+      set_variable NATS_USER "$OPTARG"
       ;;
     s)
       set_variable NATS_SERVER_NAME "$OPTARG"
       ;;
-    w)
+    p)
       set_variable NATS_WEBSOCKET_PORT "$OPTARG"
       ;;
     a)
       set_variable NATS_USER_ACCOUNT "$OPTARG"
       ;;
     u)
-      set_variable NATS_USER "$OPTARG"
+      set_variable NATS_URL "$OPTARG"
       ;;
     h)
       print_usage
@@ -415,6 +401,12 @@ function run_script {
 #  createContext
 #  cleanUp
 
+  echo
+  echo -e "${BLACK}${ON_GREEN}Post installation steps:${COLOR_OFF}"
+  echo You will need to take a copy of this file:
+  cat "$NATS_HOME"/SYS_SIGNED_KEY_LOCATION.nk
+  echo and locate it so the SavUp server has access.
+  echo
   echo "Done!"
 }
 
