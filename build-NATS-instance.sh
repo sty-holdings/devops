@@ -62,7 +62,7 @@ function copying_file_gcloud_instance() {
 }
 
 function creating_gcloud_directories() {
-  sh ${GCLOUD_ROOT_DIRECTORY}/gcloud-cli-create-directories.sh "$1" "$2" "$3"
+  sh ${GCLOUD_ROOT_DIRECTORY}/gcloud-cli-create-directories.sh "$1" "$2" "$3" "$4"
   echo
 }
 
@@ -274,11 +274,12 @@ function run_script {
   creating_gcloud_firewall_rules
   creating_gcloud_instance "$GC_PROJECT_ID" "$GC_INSTANCE_NAME" "$GC_REGION" "$GC_INSTANCE_ADDRESS" "$GC_SERVICE_ACCOUNT" "$GC_FIREWALL_TAGS"
   mount_nats_drive "$GC_REGION" "$GC_REMOTE_LOGIN" "$GC_SERVER_USER"
-  creating_gcloud_directories "$GC_REGION" "$GC_REMOTE_LOGIN" "$TARGET_DIRECTORY"
+  creating_gcloud_directories "$GC_REGION" "$GC_REMOTE_LOGIN" "$TARGET_DIRECTORY" $GC_SERVER_USER
   copying_file_gcloud_instance "$GC_REGION" "$GC_REMOTE_LOGIN" "$SHARED_DIRECTORY" "$NATS_ROOT_DIRECTORY" "$TARGET_DIRECTORY"
   executing_gcloud_base_configuration
   restarting_gcloud_instance
 
+  echo "${BLACK}${ON_GREEN}Post installation steps:${COLOR_OFF}"
   echo "Check the following items to see if the installation complete:"
   echo "\tYou can connect to the ${GC_INSTANCE_NAME}"
   echo "\tThe following directories exist:"

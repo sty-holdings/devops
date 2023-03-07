@@ -17,10 +17,12 @@ set -eo pipefail
 GC_REGION=$1
 GC_REMOTE_LOGIN=$2
 TARGET_DIRECTORY=$3
+GC_SERVER_USER=$4
 
 echo "Making directories on GCloud instance"
 gcloud compute ssh --zone "${GC_REGION}" "${GC_REMOTE_LOGIN}" --command "mkdir -p ${TARGET_DIRECTORY}/scripts/"
 gcloud compute ssh --zone "${GC_REGION}" "${GC_REMOTE_LOGIN}" --command "ln -s /mnt/disks/nats_home ${TARGET_DIRECTORY}/nats"
+gcloud compute ssh --zone "${GC_REGION}" "${GC_REMOTE_LOGIN}" --command "sudo chown -R ${GC_SERVER_USER} /mnt/disks/nats_home"
 echo "Finished making directories on GCloud instance"
 
 exit 0
