@@ -5,7 +5,11 @@
 # Description: Creates a gcloud instance for running a NATS server.
 #
 # Installation:
-#   None required
+#   You need to have a Google account with a project.
+#
+# NOTES:
+#   It is recommended that you have a service account for the project. If you don't, you will need to
+#   remove --service-account from the gcloud-cli-create-instance.sh file.
 #
 # Required IAM Roles:
 #  - Compute Admin
@@ -92,7 +96,13 @@ function executing_gcloud_base_configuration() {
 }
 
 function get_service_account_number() {
-
+  echo "Getting the service account id for the GCloud project"
+  gcloud iam service-accounts list --project="${GC_PROJECT_ID}" > /tmp/service-account.tmp
+  awk ' $1=="Compute" { print $6 } ' < /tmp/service-account.tmp > /tmp/service-account-email.tmp
+  GC_SERVICE_ACCOUNT=$(awk -F - ' { print $1 } ' < /tmp/service-account-email.tmp)
+  rm /tmp/service-account.tmp /tmp/service-account-email.tmp
+  echo "Finished getting the service account id for the GCloud project"
+  echo
 }
 
 function init_script() {
@@ -228,7 +238,6 @@ function run_script {
       ;;
     g)
       set_variable GC_PROJECT_ID "$OPTARG"
-      get_service_account_number
       ;;
     h)
       print_usage
@@ -261,6 +270,7 @@ function run_script {
 
   # The gcloud config set $GC_PROJECT_ID is required to make sure the resources are built in the correct project.
   gcloud config set project "$GC_PROJECT_ID"
+  get_service_account_number
   creating_gcloud_firewall_rules
   creating_gcloud_instance "$GC_PROJECT_ID" "$GC_INSTANCE_NAME" "$GC_REGION" "$GC_INSTANCE_ADDRESS" "$GC_SERVICE_ACCOUNT" "$GC_FIREWALL_TAGS"
   mount_nats_drive "$GC_REGION" "$GC_REMOTE_LOGIN" "$GC_SERVER_USER"

@@ -50,7 +50,7 @@ if [ "${GC_ADDRESS}" = "0.0.0.0" ]; then
     exit 0
   fi
 else
-  echo "${ON_YELLOW}Since there is an assigned IP Address, this will be connected to the PREMIUM Google network.${COLOR_OFF}"
+  echo "${BLACK}${ON_YELLOW}Since there is an assigned IP Address, this will be connected to the PREMIUM Google network.${COLOR_OFF}"
   # The if/then prevents gcloud or an error from terminating the script.
   if gcloud compute instances create "${GC_INSTANCE_NAME}" \
     --project="${GC_PROJECT_ID}" \
