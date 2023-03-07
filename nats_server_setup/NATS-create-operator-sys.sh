@@ -30,4 +30,4 @@ fi
 nsc list keys --all 2> /tmp/nats_keys.tmp
 awk '$2=="SYS" && $6=="*" { print $4 } ' < /tmp/nats_keys.tmp > /tmp/SYS-signed.nk.tmp
 b=$(cut -c2-3 < /tmp/SYS-signed.nk.tmp)
-cat "$NKEYS_PATH"/keys/A/"$b"/*.nk > "$NATS_HOME/.keys/SYS_SIGNED_KEY.nk"
+echo "$NKEYS_PATH"/keys/A/"$b"/*.nk > "$NATS_HOME"/SYS_SIGNED_KEY_LOCATION.nk
