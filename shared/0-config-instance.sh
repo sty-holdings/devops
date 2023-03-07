@@ -14,7 +14,7 @@ VIMRC_OG=/etc/vim/original.vimrc
 ORIGINAL=.original
 UPGRADE_DONE=.apt_upgrade.dont_delete
 
-sudo apt update
+sudo apt-get update
 
 if ! [ -f "${HOME}/$UPGRADE_DONE" ]; then
 	sudo apt-get install acl -y
