@@ -9,7 +9,4 @@ Type=simple
 Restart=always
 RestartSec=5
 User=nats
-ExecStart=/usr/bin/nats-server -c /mnt/disks/nats_home/nats.conf
 
-[Install]
-WantedBy=multi-user.target
