@@ -1,6 +1,7 @@
 #!/bin/bash
 #
 # Name: build-NATS-instance.sh
+# To execute: ./build-NATS-instance.sh ...
 #
 # Description: Creates a gcloud instance for running a NATS server.
 #
@@ -115,7 +116,7 @@ function mount_nats_drive() {
 }
 
 function print_error() {
-  echo "${ON_RED}$1${COLOR_OFF}"
+  echo -e "${ON_RED}$1${COLOR_OFF}"
 }
 
 function print_failure_note() {
@@ -124,25 +125,25 @@ function print_failure_note() {
 
 function print_parameters() {
   echo "Here are the values you have supplied:"
-  echo "Target Environment:\t${TARGET_ENVIRONMENT}"
-  echo "GC_PROJECT_ID=\t\t${GC_PROJECT_ID}"
-  echo "\t\t\tmust match the target environment. Env of dev should have the dev project id."
-  echo "GC_SERVICE_ACCOUNT=\t${GC_SERVICE_ACCOUNT}"
-  echo "\t\t\tmust match the target environment. Env of dev should have the dev service account."
-  echo "GC_INSTANCE_NUMBER=\t${GC_INSTANCE_NUMBER}"
-  echo "GC_INSTANCE_ADDRESS=\t${GC_INSTANCE_ADDRESS}"
-  echo "GC_FIREWALL_TAGS=\t${GC_FIREWALL_TAGS}"
+  echo -e "Target Environment:\t${TARGET_ENVIRONMENT}"
+  echo -e "GC_PROJECT_ID=\t\t${GC_PROJECT_ID}"
+  echo -e "\t\t\tmust match the target environment. Env of dev should have the dev project id."
+  echo -e "GC_SERVICE_ACCOUNT=\t${GC_SERVICE_ACCOUNT}"
+  echo -e "\t\t\tmust match the target environment. Env of dev should have the dev service account."
+  echo -e "GC_INSTANCE_NUMBER=\t${GC_INSTANCE_NUMBER}"
+  echo -e "GC_INSTANCE_ADDRESS=\t${GC_INSTANCE_ADDRESS}"
+  echo -e "GC_FIREWALL_TAGS=\t${GC_FIREWALL_TAGS}"
   echo
   echo "Here are the pre-set or defined variables:"
-  echo "ROOT_DIRECTORY= \t${ROOT_DIRECTORY}"
-  echo "GCLOUD_ROOT_DIRECTORY=\t${ROOT_DIRECTORY}/gcloud"
-  echo "NATS_ROOT_DIRECTORY=\t${ROOT_DIRECTORY}/nats_server_setup"
-  echo "SHARED_DIRECTORY=\t${ROOT_DIRECTORY}/shared"
-  echo "TARGET_DIRECTORY=\t${TARGET_DIRECTORY}"
-  echo "GC_SERVER_USER= \t${GC_SERVER_USER}"
-  echo "GC_REGION=      \t${GC_REGION}"
-  echo "GC_INSTANCE_NAME=\t${GC_INSTANCE_NAME}"
-  echo "GC_REMOTE_LOGIN=\t${GC_REMOTE_LOGIN}"
+  echo -e "ROOT_DIRECTORY= \t${ROOT_DIRECTORY}"
+  echo -e "GCLOUD_ROOT_DIRECTORY=\t${ROOT_DIRECTORY}/gcloud"
+  echo -e "NATS_ROOT_DIRECTORY=\t${ROOT_DIRECTORY}/nats_server_setup"
+  echo -e "SHARED_DIRECTORY=\t${ROOT_DIRECTORY}/shared"
+  echo -e "TARGET_DIRECTORY=\t${TARGET_DIRECTORY}"
+  echo -e "GC_SERVER_USER= \t${GC_SERVER_USER}"
+  echo -e "GC_REGION=      \t${GC_REGION}"
+  echo -e "GC_INSTANCE_NAME=\t${GC_INSTANCE_NAME}"
+  echo -e "GC_REMOTE_LOGIN=\t${GC_REMOTE_LOGIN}"
   echo
 }
 
@@ -150,24 +151,24 @@ function print_usage() {
   echo
   echo "This will create an instance on GCloud."
   echo
-  echo "Usage: ${FILENAME} -h, -d | -p, -a {argument}, -f {argument}, -n {argument}, -g {Google project id}, -s {Google service account}"
+  echo "Usage: ./${FILENAME} -h, -d | -p, -a {argument}, -f {argument}, -n {argument}, -g {Google project id}"
   echo
   echo "flags:"
-  echo "-h\t\t\t display help"
-  echo "-d\t\t\t Install a gcloud development instance. (-d | -p Must be first flag provided."
-  echo "-p\t\t\t Install a gcloud production instance. (-d | -p Must be first flag provided."
-  echo "-a {IPV4 address}\t The IPV4 address for the instance. To have an IP address assigned, use 0.0.0.0"
-  echo "-n {number}\t\t The unique number that identifies the instance."
-  echo "-f {tag,...}\t\t Which firewall tags that should be applied to this instance."
-  echo "-g {project id}\t\t The project id that matches the environment. Project Id for dev vs the project id for production."
-  echo "\t\t\t clicking on Computer Engine default service account. You want the number at the beginning of the email."
+  echo -e "-h\t\t\t display help"
+  echo -e "-d\t\t\t Install a gcloud development instance. (-d | -p Must be first flag provided."
+  echo -e "-p\t\t\t Install a gcloud production instance. (-d | -p Must be first flag provided."
+  echo -e "-a {IPV4 address}\t The IPV4 address for the instance. To have an IP address assigned, use 0.0.0.0"
+  echo -e "-n {number}\t\t The unique number that identifies the instance."
+  echo -e "-f {tag,...}\t\t Which firewall tags that should be applied to this instance."
+  echo -e "-g {project id}\t\t The project id that matches the environment. Project Id for dev vs the project id for production."
+  echo -e "\t\t\t clicking on Computer Engine default service account. You want the number at the beginning of the email."
   echo
 }
 
 function restarting_gcloud_instance() {
   # Restarting the GCloud Instance
   gcloud compute ssh --zone "${GC_REGION}" "${GC_REMOTE_LOGIN}" --command "sudo shutdown -r now"
-  echo "${BLACK}${ON_YELLOW}The script is going to pause for 1 minute to allow time for the instance to spin up after the reboot.${COLOR_OFF}"
+  echo -e "${BLACK}${ON_YELLOW}The script is going to pause for 1 minute to allow time for the instance to spin up after the reboot.${COLOR_OFF}"
   sleep 60
 }
 
@@ -281,13 +282,13 @@ function run_script {
 
   echo "${BLACK}${ON_GREEN}Post installation steps:${COLOR_OFF}"
   echo "Check the following items to see if the installation complete:"
-  echo "\tYou can connect to the ${GC_INSTANCE_NAME}"
-  echo "\tThe following directories exist:"
-  echo "\t\t${TARGET_DIRECTORY}"
-  echo "\t\t${TARGET_DIRECTORY}/scripts"
-  echo "\tThere are files in the scripts directory"
-  echo "\t/etc/original.fstab exists"
-  echo "\tYou can enter lsl on the command line and get a list of files."
+  echo -e "\tYou can connect to the ${GC_INSTANCE_NAME}"
+  echo -e "\tThe following directories exist:"
+  echo -e "\t\t${TARGET_DIRECTORY}"
+  echo -e "\t\t${TARGET_DIRECTORY}/scripts"
+  echo -e "\tThere are files in the scripts directory"
+  echo -e "\t/etc/original.fstab exists"
+  echo -e "\tYou can enter lsl on the command line and get a list of files."
   echo "To install the NATS server, go to ${TARGET_DIRECTORY}/scripts and run nats-setup.sh"
   echo "Done"
   echo
