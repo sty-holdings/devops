@@ -14,10 +14,10 @@ echo "$NATS_HOME"/jwt | sed {s/\\//\\\\\\\\\\//g} > $NATS_RESOLVER_MOD_FILE
 #
 echo -n "sed {s/'\.\/jwt/'" > $MOD_NATS_RESOLVER
 tr -d '\n' >> $MOD_NATS_RESOLVER < "$NATS_RESOLVER_MOD_FILE"
-echo "cp $NATS_HOME/includes/OG_$NATS_RESOLVER > $NATS_HOME/includes/$NATS_RESOLVER" >> $MOD_NATS_RESOLVER
+echo "/} $NATS_HOME/includes/OG_$NATS_RESOLVER > $NATS_HOME/includes/$NATS_RESOLVER" >> $MOD_NATS_RESOLVER # The \} at the start is needed
 chmod 755 $MOD_NATS_RESOLVER
 sh $MOD_NATS_RESOLVER
 
-echo "==> Setting $NATS_HOME/jwt group to nats group"
+echo " - Setting $NATS_HOME/jwt group to nats group"
 sudo chgrp nats "$NATS_HOME"/jwt
 echo

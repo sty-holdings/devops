@@ -219,7 +219,7 @@ function createResolver() {
     echo
   else
   	sh "$HOME"/scripts/NATS-create-resolver-file.sh "$1" "$2" "$3"
-#  	sh "$HOME"/scripts/NATS-edit-jwt-dir.sh "$1" "$2"
+  	sh "$HOME"/scripts/NATS-edit-jwt-dir.sh "$1" "$2"
   fi
 }
 
