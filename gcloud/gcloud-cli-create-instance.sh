@@ -20,14 +20,17 @@ GC_REGION=$3
 GC_ADDRESS=$4
 GC_SERVICE_ACCOUNT=$5
 FIREWALL_TAGS=$6
+SHARED_DIRECTORY=$7
 # Script variables
 IMAGE_NAME=projects/ubuntu-os-cloud/global/images/ubuntu-2204-jammy-v20230302
 EPOCHSECONDS=$(date +%s)
 GC_INSTANCE_DISK_NAME="${GC_INSTANCE_NAME}-$EPOCHSECONDS"
 
+. "${SHARED_DIRECTORY}"/display-info.sh
+
 # NOTE: The project config has to be set before this command runs or it will execute against the last GCloud project set.
 if [ "${GC_ADDRESS}" = "0.0.0.0" ]; then
-  echo -e "${BLACK}${ON_YELLOW}Since there is no assigned IP Address, this will be connected to the STANDARD Google network.${COLOR_OFF}"
+  displayInfo "Since there is no assigned IP Address, this will be connected to the STANDARD Google network."
   # The if/then prevents gcloud or an error from terminating the script.
   if gcloud compute instances create "${GC_INSTANCE_NAME}" \
     --project="${GC_PROJECT_ID}" \
@@ -47,10 +50,10 @@ if [ "${GC_ADDRESS}" = "0.0.0.0" ]; then
     --shielded-integrity-monitoring \
     --reservation-affinity=any \
     --key-revocation-action-type=stop; then
-    exit 0
+    echo -n
   fi
 else
-  echo -e "${BLACK}${ON_YELLOW}Since there is an assigned IP Address, this will be connected to the PREMIUM Google network.${COLOR_OFF}"
+  displayInfo "Since there is an assigned IP Address, this will be connected to the PREMIUM Google network."
   # The if/then prevents gcloud or an error from terminating the script.
   if gcloud compute instances create "${GC_INSTANCE_NAME}" \
     --project="${GC_PROJECT_ID}" \
@@ -70,8 +73,6 @@ else
     --shielded-integrity-monitoring \
     --reservation-affinity=any \
     --key-revocation-action-type=stop; then
-    exit 0
+    echo -n
   fi
 fi
-
-exit 0

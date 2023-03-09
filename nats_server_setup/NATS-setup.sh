@@ -38,7 +38,9 @@ NATS_PID_RUNNING=nats.pid.running
 
 function initScript() {
   . "${SCRIPT_DIRECTORY}"/echo-colors.sh
+  . "${SCRIPT_DIRECTORY}"/display-info.sh
   . "${SCRIPT_DIRECTORY}"/display-warning.sh
+  . "${SCRIPT_DIRECTORY}"/display-error.sh
 }
 
 function displaySavup() {
@@ -53,10 +55,6 @@ function displaySavup() {
   echo " NATS SERVER installation and configuration"
 }
 
-function displayStepSpacer() {
-	echo "--------------------------"
-}
-
 function displaySkipMessage() {
   if [[ ( "$1" == "Y" ) || ( "$1" == "y" ) ]]; then
     echo -e " Do you want to ${BLACK}${ON_YELLOW}SKIP${COLOR_OFF} this step? (${BLACK}${ON_YELLOW}Y${COLOR_OFF}/n)"
@@ -66,6 +64,7 @@ function displaySkipMessage() {
 }
 
 function isNATSAlreadyRunning() {
+  displayInfo "Checking to see if NATS server is running."
   sudo ps aux | grep nats-server | awk '/nats.conf/' > /tmp/natsAUX.tmp
   NATS_PID=$(sudo cat /tmp/natsAUX.tmp | awk '//{print $2}')
 
@@ -81,37 +80,33 @@ function isNATSAlreadyRunning() {
   fi
 }
 
-function print_error() {
-  echo -e "${ON_RED}$1${COLOR_OFF}"
-}
-
-function set_variable() {
+function setVariable() {
   cmd="${1}=$2"
   eval "$cmd"
   cmd="${1}_CHECKED=\"true\""
   eval "$cmd"
 }
 
-function validate_parameters() {
+function validateParameters() {
   if [ -z "$NATS_OPERATOR_CHECKED" ]; then
     local Failed="true"
-    print_error "ERROR: The operator parameter is missing"
+    displayError "The operator parameter is missing"
   fi
   if [ -z "$NATS_USER_ACCOUNT_CHECKED" ]; then
     local Failed="true"
-    print_error "ERROR: The user account parameter is missing"
+    displayError "The user account parameter is missing"
   fi
   if [ -z "$NATS_USER_CHECKED" ]; then
     local Failed="true"
-    print_error "ERROR: The user parameter is missing"
+    displayError "The user parameter is missing"
   fi
   if [ -z "$NATS_URL_CHECKED" ]; then
     local Failed="true"
-    print_error "ERROR: The URL parameter is missing"
+    displayError "The URL parameter is missing"
   fi
   if [ -z "$NATS_SERVER_NAME_CHECKED" ]; then
     local Failed="true"
-    print_error "ERROR: The server name parameter is missing"
+    displayError "The server name parameter is missing"
   fi
 
   if [ "$Failed" == "true" ]; then
@@ -153,7 +148,7 @@ function removeNATS() {
 }
 
 function addNATSExport() {
-  echo "Add NATS Exports to $HOME/.bash_exports"
+  displayInfo "Add NATS Exports to $HOME/.bash_exports."
   if grep -q "${NATS_URL}" "$HOME/.bash_exports"; then
   	echo " - NATS exports already exist. No action taken."
   else
@@ -166,7 +161,7 @@ EOF
 }
 
 function installNATSTools() {
-  echo "Install NATS server, NATS CLI, and NSC at $NATS_HOME"
+  displayInfo "Install NATS server, NATS CLI, and NSC at $NATS_HOME"
   displaySkipMessage n
   read -r continue
   if  [[ ( "$continue" == "Y" ) || ( "$continue" == "y" ) ]]; then
@@ -179,7 +174,7 @@ function installNATSTools() {
 }
 
 function createOperatorAndSystem() {
-  echo "Creating NATS operator and SYS at ${NATS_URL}"
+  displayInfo "Create NATS operator and SYS at ${NATS_URL}"
   displaySkipMessage N
   read -r continue
   if  [[ ( "$continue" == "Y" ) || ( "$continue" == "y" ) ]]; then
@@ -191,7 +186,7 @@ function createOperatorAndSystem() {
 }
 
 function createAccount() {
-  echo "Creating NATS SAVUP account"
+  displayInfo "Create NATS SAVUP account"
   displaySkipMessage N
   read -r continue
   if  [[ ( "$continue" == "Y" ) || ( "$continue" == "y" ) ]]; then
@@ -203,7 +198,7 @@ function createAccount() {
 }
 
 function createResolver() {
-  echo "Creating NATS resolver file"
+  displayInfo "Create NATS resolver file"
   displaySkipMessage N
   read -r continue
   if  [[ ( "$continue" == "Y" ) || ( "$continue" == "y" ) ]]; then
@@ -216,7 +211,7 @@ function createResolver() {
 }
 
 function createNATSServerConfig() {
-  echo "Creating NATS config file"
+  displayInfo "Create NATS config file"
   displaySkipMessage N
   read -r continue
   if  [[ ( "$continue" == "Y" ) || ( "$continue" == "y" ) ]]; then
@@ -228,7 +223,7 @@ function createNATSServerConfig() {
 }
 
 function startNATSServer() {
-  echo "Starting the NATS server in background mode"
+  displayInfo "Start the NATS server in background mode"
   displaySkipMessage N
   read -r continue
   if  [[ ( "$continue" == "Y" ) || ( "$continue" == "y" ) ]]; then
@@ -248,7 +243,7 @@ function startNATSServer() {
 }
 
 function pushAllAccountsUser() {
-  echo "Pushing NSC account to NATS server"
+  displayInfo "Push NSC account to NATS server"
   displaySkipMessage N
   read -r continue
   if  [[ ( "$continue" == "Y" ) || ( "$continue" == "y" ) ]]; then
@@ -260,7 +255,7 @@ function pushAllAccountsUser() {
 }
 
 function createUser() {
-  echo "Creating NATS user"
+  displayInfo "Create NATS user"
   displaySkipMessage N
   read -r continue
   if  [[ ( "$continue" == "Y" ) || ( "$continue" == "y" ) ]]; then
@@ -272,7 +267,7 @@ function createUser() {
 }
 
 function createContext() {
-  echo "Creating NATS context for local user"
+  displayInfo "Create NATS context for local user"
   displaySkipMessage N
   read -r continue
   if  [[ ( "$continue" == "Y" ) || ( "$continue" == "y" ) ]]; then
@@ -285,7 +280,7 @@ function createContext() {
 }
 
 function cleanUp() {
-  echo "Cleaning up"
+  displayInfo "Cleaning up"
   displaySkipMessage N
   read -r continue
   if  [[ ( "$continue" == "Y" ) || ( "$continue" == "y" ) ]]; then
@@ -299,8 +294,8 @@ function cleanUp() {
 }
 
 # shellcheck disable=SC2028
-function print_parameters() {
-  echo "Here are the values you have supplied:"
+function printParameters() {
+  displayInfo "Here are the values you have supplied:"
   echo -e "NATS_OPERATOR:\t     ${NATS_OPERATOR}"
   echo -e "NATS_URL:\t     ${NATS_URL}"
   echo "NATS_SERVER_NAME:    ${NATS_SERVER_NAME}"
@@ -319,9 +314,8 @@ function print_parameters() {
 }
 
 # shellcheck disable=SC2028
-function print_usage() {
-  echo
-  echo "This will create an instance on GCloud."
+function printUsage() {
+  displayInfo "This will create an instance on GCloud."
   echo
   echo "Usage: ${FILENAME} -h | -o {operator name} -a {account name} -n {user name} -u {url} -s {server name} -p {port number}"
   echo
@@ -339,48 +333,48 @@ function print_usage() {
 # Main function of this script
 function runScript {
   if [ "$#" == "0" ]; then
-    print_error "ERROR: No parameters where provided."
-    print_usage
+    displayError "No parameters where provided."
+    printUsage
     exit 1
   fi
 
   displaySavup
   isNATSAlreadyRunning
 
-  while getopts 'o:a:u:n:s:w:h' OPT; do # see print_usage
+  while getopts 'o:a:u:n:s:w:p:h' OPT; do # see print_usage
     case "$OPT" in
     o)
-      set_variable NATS_OPERATOR "$OPTARG"
+      setVariable NATS_OPERATOR "$OPTARG"
       ;;
     n)
-      set_variable NATS_USER "$OPTARG"
+      setVariable NATS_USER "$OPTARG"
       ;;
     s)
-      set_variable NATS_SERVER_NAME "$OPTARG"
+      setVariable NATS_SERVER_NAME "$OPTARG"
       ;;
     p)
-      set_variable NATS_WEBSOCKET_PORT "$OPTARG"
+      setVariable NATS_WEBSOCKET_PORT "$OPTARG"
       ;;
     a)
-      set_variable NATS_USER_ACCOUNT "$OPTARG"
+      setVariable NATS_USER_ACCOUNT "$OPTARG"
       ;;
     u)
-      set_variable NATS_URL "$OPTARG"
+      setVariable NATS_URL "$OPTARG"
       ;;
     h)
-      print_usage
+      printUsage
       exit 0
       ;;
     *)
-      print_error "${ON_RED}ERROR: Please review the usage printed below:${COLOR_OFF}" >&2
-      print_usage
+      displayError "${ON_RED}ERROR: Please review the usage printed below:${COLOR_OFF}" >&2
+      printUsage
       exit 1
       ;;
     esac
   done
 
-  validate_parameters
-  print_parameters
+  validateParameters
+  printParameters
   removeNATS
   restartSystem
   addNATSExport
@@ -393,10 +387,10 @@ function runScript {
   pushAllAccountsUser "$NATS_HOME" "$SCRIPT_DIRECTORY"
   createUser "$NATS_HOME" "$SCRIPT_DIRECTORY" "$NATS_USER_ACCOUNT" "$NATS_USER"
   createContext "$NATS_HOME" "$SCRIPT_DIRECTORY" "$NATS_OPERATOR" "$NATS_USER_ACCOUNT" "$NATS_USER"
-#  cleanUp
+  cleanUp
 
   echo
-  echo -e "${BLACK}${ON_GREEN}Post installation steps:${COLOR_OFF}"
+  displayInfo "Post installation steps:"
   echo You will need to take a copy of this file:
   cat "$NATS_HOME"/SYS_SIGNED_KEY_LOCATION.nk
   echo and locate it so the SavUp server has access.

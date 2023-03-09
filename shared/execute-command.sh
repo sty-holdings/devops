@@ -4,7 +4,7 @@
 #
 
 # shellcheck disable=SC2129
-executeCommand() {
+function executeCommand() {
   echo "$1" >>"$NATS_HOME"/NATS_log_file 2>> "$NATS_HOME"/NATS_log_file
   ${1} >> "$NATS_HOME"/NATS_log_file 2>> "$NATS_HOME"/NATS_log_file
   echo >> "$NATS_HOME"/NATS_log_file 2>> "$NATS_HOME"/NATS_log_file

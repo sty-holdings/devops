@@ -19,8 +19,6 @@ GC_REMOTE_LOGIN=$2
 SHARED_DIRECTORY=$3
 TARGET_DIRECTORY=$4
 
-echo "Copying support files to GCloud instance"
-gcloud compute scp --recurse --zone "${GC_REGION}" "${SHARED_DIRECTORY}/." "${GC_REMOTE_LOGIN}:${TARGET_DIRECTORY}/scripts/."
-echo "Finished support files to GCloud instance"
-
-exit 0
+if gcloud compute scp --recurse --zone "${GC_REGION}" "${SHARED_DIRECTORY}/." "${GC_REMOTE_LOGIN}:${TARGET_DIRECTORY}/scripts/."; then
+  echo -n
+fi

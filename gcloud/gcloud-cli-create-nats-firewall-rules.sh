@@ -12,6 +12,6 @@
 #
 
 # NOTE: The config has to be set before this command runs or it will execute against the last set GCloud project set.
-gcloud compute firewall-rules create nats --direction=INGRESS --priority=1000 --network=default --allow=TCP:4222,TCP:9222
-
-exit 0
+if gcloud compute firewall-rules create nats --direction=INGRESS --priority=1000 --network=default --allow=TCP:4222,TCP:9222; then
+  echo -n
+fi

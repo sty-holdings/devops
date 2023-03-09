@@ -4,7 +4,7 @@
 #
 
 # shellcheck disable=SC2129
-function displayWarning() {
-  echo -e "${BLACK}${ON_YELLOW}WARNING:$1 ${COLOR_OFF}"
+function displayInfo() {
+  echo -e "${BLACK}${ON_GREEN}INFO: $1${COLOR_OFF}"
 }
 
