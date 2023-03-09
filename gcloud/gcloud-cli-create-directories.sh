@@ -25,6 +25,3 @@ fi
 if gcloud compute ssh --zone "${GC_REGION}" "${GC_REMOTE_LOGIN}" --command "ln -s /mnt/disks/nats_home ${TARGET_DIRECTORY}/nats"; then
   echo -n
 fi
-if gcloud compute ssh --zone "${GC_REGION}" "${GC_REMOTE_LOGIN}" --command "sudo chown -R ${GC_SERVER_USER} /mnt/disks/nats*"; then
-  echo -n
-fi
