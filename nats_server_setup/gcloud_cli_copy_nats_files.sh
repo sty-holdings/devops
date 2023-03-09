@@ -11,7 +11,7 @@
 # All Rights Reserved
 #
 
-set -eo pipefail
+set -o pipefail
 
 # Passed by caller
 GC_REGION=$1

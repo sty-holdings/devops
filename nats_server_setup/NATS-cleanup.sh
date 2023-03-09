@@ -25,3 +25,5 @@ else
 	echo " This will load the changes made."
 	echo
 fi
+
+sudo rm /tmp/nats*

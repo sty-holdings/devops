@@ -11,7 +11,7 @@
 # All Rights Reserved
 #
 # shellcheck disable=SC2028
-set -eo pipefail
+set -o pipefail
 
 # script variables
 # shellcheck disable=SC2006
@@ -22,10 +22,10 @@ SCRIPT_DIRECTORY=${ROOT_DIRECTORY}/scripts  # Remote instance
 NATS_OPERATOR=""
 NATS_USER_ACCOUNT=""
 NATS_USER=""
-NATS_URL=""
 NATS_SERVER_NAME=""
 NATS_WEBSOCKET_PORT=""
 # Internal Variables
+NATS_URL="nats://0.0.0.0:4222"
 NKEYS_PATH=~/.local/share/nats/nsc/keys
 NATS_BIN=/usr/bin/nats-server
 NATSCLI_BIN=/usr/bin/nats
@@ -37,6 +37,7 @@ NATS_PID=nats.pid
 NATS_PID_RUNNING=nats.pid.running
 
 function initScript() {
+  rm  "${NATS_HOME}"/NATS_log_file 2> /dev/null
   . "${SCRIPT_DIRECTORY}"/echo-colors.sh
   . "${SCRIPT_DIRECTORY}"/display-info.sh
   . "${SCRIPT_DIRECTORY}"/display-warning.sh
@@ -100,10 +101,6 @@ function validateParameters() {
     local Failed="true"
     displayError "The user parameter is missing"
   fi
-  if [ -z "$NATS_URL_CHECKED" ]; then
-    local Failed="true"
-    displayError "The URL parameter is missing"
-  fi
   if [ -z "$NATS_SERVER_NAME_CHECKED" ]; then
     local Failed="true"
     displayError "The server name parameter is missing"
@@ -138,9 +135,11 @@ function removeNATS() {
     sudo rm "$NATS_BIN"
    	sudo rm "$NATSCLI_BIN"
    	sudo rm "$NSC_BIN"
+   	sudo rm /tmp/nats*
    	rm -rf "$HOME"/.config/NATS
    	rm -rf "$HOME"/.local/NATS
    	rm -rf "$HOME"/.local/share/nats
+   	rm -rf "$HOME"/.config/nats
   else
     echo "You elected to skip this step"
   fi
@@ -168,7 +167,7 @@ function installNATSTools() {
     echo "You elected to skip this step"
     echo
   else
-  	sh "$HOME"/scripts/NATS-install-nats-natscli-nsc.sh "$1" "$2" "$3" "$4"
+  	. "$HOME"/scripts/NATS-install-nats-natscli-nsc.sh "$1" "$2" "$3" "$4"
   fi
   echo
 }
@@ -181,7 +180,7 @@ function createOperatorAndSystem() {
     echo "You elected to skip this step"
     echo
   else
-  	sh "$HOME"/scripts/NATS-create-operator-sys.sh "$1" "$2" "$3" "$4" "$5"
+  	. "$HOME"/scripts/NATS-create-operator-sys.sh "$1" "$2" "$3" "$4" "$5"
   fi
 }
 
@@ -193,7 +192,7 @@ function createAccount() {
     echo "You elected to skip this step"
     echo
   else
-  	sh "$HOME"/scripts/NATS-create-account.sh "$1" "$2"
+  	. "$HOME"/scripts/NATS-create-account.sh "$1" "$2"
   fi
 }
 
@@ -205,8 +204,8 @@ function createResolver() {
     echo "You elected to skip this step"
     echo
   else
-  	sh "$HOME"/scripts/NATS-create-resolver-file.sh "$1" "$2" "$3"
-  	sh "$HOME"/scripts/NATS-edit-jwt-dir.sh "$1" "$2"
+  	. "$HOME"/scripts/NATS-create-resolver-file.sh "$1" "$2" "$3"
+  	. "$HOME"/scripts/NATS-edit-jwt-dir.sh "$1" "$2"
   fi
 }
 
@@ -218,7 +217,7 @@ function createNATSServerConfig() {
     echo "You elected to skip this step"
     echo
   else
-    	sh "$HOME"/scripts/NATS-create-config-file.sh "$1" "$2" "$3" "$4" "$5"
+    	. "$HOME"/scripts/NATS-create-config-file.sh "$1" "$2" "$3" "$4" "$5"
     fi
 }
 
@@ -230,7 +229,7 @@ function startNATSServer() {
     echo "You elected to skip this step"
     echo
   else
-  	sh "$HOME"/scripts/NATS-start-server-service.sh "$1" "$2" "$3"
+  	. "$HOME"/scripts/NATS-start-server-service.sh "$1" "$2" "$3"
   	sleep 2
   	sudo ps aux | grep nats-server | awk '/nats.conf/' > /tmp/natsAUX.tmp
   	NATS_PID=$(sudo cat /tmp/natsAUX.tmp | awk '//{print $2}')
@@ -250,7 +249,7 @@ function pushAllAccountsUser() {
     echo "You elected to skip this step"
     echo
   else
-  	sh "$HOME"/scripts/NATS-push-accounts.sh "$1" "$2"
+  	. "$HOME"/scripts/NATS-push-accounts.sh "$1" "$2"
   fi
 }
 
@@ -262,7 +261,7 @@ function createUser() {
     echo "You elected to skip this step"
     echo
   else
-  	sh "$HOME"/scripts/NATS-create-user.sh "$1" "$2" "$3" "$4"
+  	. "$HOME"/scripts/NATS-create-user.sh "$1" "$2" "$3" "$4"
   fi
 }
 
@@ -274,8 +273,8 @@ function createContext() {
     echo "You elected to skip this step"
     echo
   else
-  	sh "$HOME"/scripts/NATS-create-SYS-contexts.sh "$1" "$2" "$3"
-  	sh "$HOME"/scripts/NATS-create-contexts.sh "$1" "$2" "$3" "$4" "$5"
+  	. "$HOME"/scripts/NATS-create-SYS-contexts.sh "$1" "$2" "$3"
+  	. "$HOME"/scripts/NATS-create-contexts.sh "$1" "$2" "$3" "$4" "$5"
   fi
 }
 
@@ -287,7 +286,7 @@ function cleanUp() {
     echo "You elected to skip this step"
     echo
   else
-  	sh "$HOME"/scripts/NATS-cleanup.sh
+  	. "$HOME"/scripts/NATS-cleanup.sh
   	echo
   	echo "==> Clean up is done"
   fi
@@ -317,14 +316,13 @@ function printParameters() {
 function printUsage() {
   displayInfo "This will create an instance on GCloud."
   echo
-  echo "Usage: ${FILENAME} -h | -o {operator name} -a {account name} -n {user name} -u {url} -s {server name} -p {port number}"
+  echo "Usage: ${FILENAME} -h | -o {operator name} -a {account name} -n {user name} -s {server name} -p {port number}"
   echo
   echo "flags:"
   echo -e "  -h\t\t\t display help"
   echo -e "  -o {operator name}\t The name of the operator."
   echo -e "  -a {account name}\t The name of the starter account."
   echo -e "  -n {user name}\t The name of the starter user."
-  echo -e "  -u {url}\t\t The URL for the server. This has to be set up in DNS or the host file."
   echo -e "  -s {server name}\t The instance name of the server."
   echo -e "  -p {port number}\t Optional - Websocket port number. Recommended to use 9222"
   echo
@@ -341,7 +339,7 @@ function runScript {
   displaySavup
   isNATSAlreadyRunning
 
-  while getopts 'o:a:u:n:s:w:p:h' OPT; do # see print_usage
+  while getopts 'o:a:n:s:w:p:h' OPT; do # see print_usage
     case "$OPT" in
     o)
       setVariable NATS_OPERATOR "$OPTARG"
@@ -358,15 +356,12 @@ function runScript {
     a)
       setVariable NATS_USER_ACCOUNT "$OPTARG"
       ;;
-    u)
-      setVariable NATS_URL "$OPTARG"
-      ;;
     h)
       printUsage
       exit 0
       ;;
     *)
-      displayError "${ON_RED}ERROR: Please review the usage printed below:${COLOR_OFF}" >&2
+      displayError "Please review the usage printed below:" >&2
       printUsage
       exit 1
       ;;
@@ -391,9 +386,9 @@ function runScript {
 
   echo
   displayInfo "Post installation steps:"
-  echo You will need to take a copy of this file:
+  echo "You will need to take a copy of this file:"
   cat "$NATS_HOME"/SYS_SIGNED_KEY_LOCATION.nk
-  echo and locate it so the SavUp server has access.
+  echo "  and locate it so the SavUp server has access."
   echo
   echo "Done!"
 }

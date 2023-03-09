@@ -8,6 +8,8 @@ NATSCLI_BIN=$3
 NSC_BIN=$4
 
 echo " - Setting up NATS user, group, home directory, and permissions"
+sudo chown -R scott_yacko_sty_holdings_com /mnt/disks/nats*
+
 if [ -f "$NATS_HOME"/includes ]; then
   echo "   - $NATS_HOME/includes already exists. No action taken."
 else
@@ -30,8 +32,8 @@ b=$(awk -F : ' $1=="nats" ' < /etc/passwd)
 if [ -n "$b" ]; then
   echo "   - NATS user already exist. No action taken."
 else
-  sudo useradd --home /mnt/disks/nats_home/ -M -s /bin/false -g nats -G google-sudoers nats
   sudo groupadd nats
+  sudo useradd --home /mnt/disks/nats_home/ -M -s /bin/false -g nats -G google-sudoers nats
   sudo chgrp -R nats "$NATS_HOME"
   sudo chmod g+s "$NATS_HOME"
 fi
