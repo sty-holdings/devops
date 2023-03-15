@@ -25,11 +25,6 @@ else
   CMD="nsc edit operator --require-signing-keys --account-jwt-server-url $NATS_URL"
   executeCommand "$CMD"
   echo "   - Creating SYS Account key file for SavUp to use for Dynamic Account/User creation."
-  if [ -f "$NATS_HOME"/.keys ]; then
-    echo "   - $NATS_HOME/.keys already exists. No action taken."
-  else
-    mkdir -p "$NATS_HOME"/.keys
-  fi
   nsc list keys --all 2> /tmp/nats_keys.tmp
   awk '$2=="SYS" && $6=="*" { print $4 } ' < /tmp/nats_keys.tmp > /tmp/SYS-signed.nk.tmp
   b=$(cut -c2-3 < /tmp/SYS-signed.nk.tmp)

@@ -146,7 +146,7 @@ function removeNATS() {
   echo
 }
 
-function addNATSExport() {
+function addNATSExportAndDirectories() {
   displayInfo "Add NATS Exports to $HOME/.bash_exports."
   if grep -q "${NATS_URL}" "$HOME/.bash_exports"; then
   	echo " - NATS exports already exist. No action taken."
@@ -156,6 +156,21 @@ export NATS_HOME=$NATS_HOME
 EOF
     echo "- Appended NATS to the $HOME/.bash_exports"
   fi
+  if [ -f "$NATS_HOME"/.keys ]; then
+    echo "   - $NATS_HOME/.keys already exists. No action taken."
+  else
+    mkdir -p "$NATS_HOME"/.keys
+    sudo chgrp nats "$NATS_HOME"/.keys
+    sudo chmod 755 "$NATS_HOME"/.keys
+  fi
+  if [ -f "$NATS_HOME"/.certs ]; then
+    echo "   - $NATS_HOME/.certs already exists. No action taken."
+  else
+    mkdir -p "$NATS_HOME"/.certs
+    sudo chgrp nats "$NATS_HOME"/.certs
+    sudo chmod 755 "$NATS_HOME"/.keys
+  fi
+
     echo
 }
 
@@ -372,7 +387,7 @@ function runScript {
   printParameters
   removeNATS
   restartSystem
-  addNATSExport
+  addNATSExportAndDirectories
   installNATSTools "$NATS_HOME" "$NATS_BIN" "$NATSCLI_BIN" "$NSC_BIN"
   createOperatorAndSystem "$NATS_OPERATOR" "$NATS_HOME" "$NATS_URL" "$NKEYS_PATH" "$SCRIPT_DIRECTORY"
   createAccount "$NATS_USER_ACCOUNT" "$SCRIPT_DIRECTORY"
