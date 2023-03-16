@@ -16,6 +16,7 @@ set -o pipefail
 # script variables
 # shellcheck disable=SC2006
 FILENAME=$(basename "$0")
+#
 # Directory and files
 ROOT_DIRECTORY=/home/scott_yacko_sty_holdings_com # Remote instance
 SCRIPT_DIRECTORY=${ROOT_DIRECTORY}/scripts  # Remote instance
@@ -24,6 +25,12 @@ NATS_USER_ACCOUNT=""
 NATS_USER=""
 NATS_SERVER_NAME=""
 NATS_WEBSOCKET_PORT=""
+#
+# Certificates and Private Key
+CERT_NAME=STAR_savup_com.ctr
+KEY_NAME=savup.com.key
+CA_NAME=CAbundle.crt
+#
 # Internal Variables
 NATS_URL="nats://0.0.0.0:4222"
 NKEYS_PATH=~/.local/share/nats/nsc/keys
@@ -392,7 +399,7 @@ function runScript {
   createOperatorAndSystem "$NATS_OPERATOR" "$NATS_HOME" "$NATS_URL" "$NKEYS_PATH" "$SCRIPT_DIRECTORY"
   createAccount "$NATS_USER_ACCOUNT" "$SCRIPT_DIRECTORY"
   createResolver "$NATS_HOME" "$NATS_RESOLVER" "$SCRIPT_DIRECTORY"
-  createNATSServerConfig "$NATS_HOME" "$NATS_WEBSOCKET_PORT" "$NATS_CONF_NAME" "$NATS_SERVER_NAME" "$NATS_RESOLVER"
+  createNATSServerConfig "$NATS_HOME" "$NATS_WEBSOCKET_PORT" "$NATS_CONF_NAME" "$NATS_SERVER_NAME" "$NATS_RESOLVER" "$CERT_NAME" "$KEY_NAME" "$CA_NAME"
   startNATSServer "$HOME" "$NATS_HOME" "$NATS_CONF_NAME"
   pushAllAccountsUser "$NATS_HOME" "$SCRIPT_DIRECTORY"
   createUser "$NATS_HOME" "$SCRIPT_DIRECTORY" "$NATS_USER_ACCOUNT" "$NATS_USER"

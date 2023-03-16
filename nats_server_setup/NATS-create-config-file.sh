@@ -7,6 +7,9 @@ NATS_WEBSOCKET_PORT=$2
 NATS_CONF_NAME=$3
 NATS_SERVER_NAME=$4
 NATS_RESOLVER=$5
+CERT_NAME=$6
+KEY_NAME=$7
+CA_NAME=$8
 
 cat > "$NATS_HOME/$NATS_CONF_NAME" <<- EOF
 	#listen: localhost:4222 # This will only allow access on the local host machine
@@ -15,18 +18,11 @@ cat > "$NATS_HOME/$NATS_CONF_NAME" <<- EOF
 
 	include 'includes/$NATS_RESOLVER' # Pull in from file
 
-	#tls: {
-	#	cert_file: "????"
-	#	key_file: "????"
-	#	verify: true
-	#	timeout: 2
-	#}
-
-	#authorization: {
-	#  token: login_auth_token
-	#}
-
 EOF
+
+if [ -n "$CERT_NAME" ]; then
+	echo -e "tls: {\n		cert_file: \"${NATS_HOME}/.certs/${CERT_NAME}\"\n		key_file: \"${NATS_HOME}/.certs/${KEY_NAME}\"\n		ca_file: \"${NATS_HOME}/.certs/${CA_NAME}\"\n		verify: true\n		timeout: 2\n	}\n"
+fi
 
 if [ -n "$NATS_WEBSOCKET_PORT" ]; then
   echo -e "  websocket {\n    port: ${NATS_WEBSOCKET_PORT}\n    no_tls: true\n    compression: true\n  }" >> "$NATS_HOME/$NATS_CONF_NAME"
